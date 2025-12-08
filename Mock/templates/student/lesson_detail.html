@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dars: {{ lesson.title }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 py-8 px-4">
+    <div class="max-w-7xl mx-auto">
+
+        {# Navigatsiya #}
+        <nav class="mb-6">
+            <ol class="flex space-x-2 text-sm text-slate-500">
+                <li>
+                    <a href="{% url 'course_roadmap' center.slug course.id %}" class="hover:text-indigo-600 transition duration-150">
+                        <i class="fas fa-book"></i> {{ course.title }}
+                    </a>
+                </li>
+                <li>/</li>
+                <li class="font-semibold text-slate-800">{{ lesson.title }}</li>
+            </ol>
+        </nav>
+
+        {# Sarlavha #}
+        <div class="mb-8 md:mb-10">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-2">
+                <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    {{ lesson.title }}
+                </span>
+            </h1>
+        </div>
+        
+        <hr class="mb-8">
+
+        {# RESURSLAR #}
+        {% if resources %}
+            <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                <i class="fas fa-folder-open text-indigo-600"></i>
+                Dars Materiallari
+            </h2>
+
+            <div class="space-y-6 md:space-y-8">
+                {% for data in resources %}
+                    
+                    <div class="bg-white p-5 md:p-6 rounded-2xl shadow-xl border 
+                        {% if data.is_viewed %}border-green-300{% else %}border-slate-100{% endif %}">
+                        
+                        {# Sarlavha va holat #}
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 pb-3 border-b border-slate-100">
+                            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                                <span class="w-6 h-6 flex items-center justify-center rounded-full bg-indigo-500 text-white text-sm font-extrabold">
+                                    {{ forloop.counter }}
+                                </span>
+                                {{ data.resource.title|default:'Nomsiz Resurs' }}
+                            </h3>
+                            <span class="text-sm font-semibold mt-2 md:mt-0 px-3 py-1 rounded-full 
+                                {% if data.is_viewed %}bg-green-100 text-green-700{% else %}bg-amber-100 text-amber-700{% endif %}">
+                                {% if data.is_viewed %}
+                                    <i class="fas fa-check-circle"></i> Yakunlangan
+                                {% else %}
+                                    <i class="fas fa-clock"></i> Ko'rilmagan
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        {# KONTENT #}
+                        <div class="mt-4">
+                            
+                            {# 1. YOUTUBE VIDEO #}
+                            {% if data.youtube_id %}
+                                <p class="text-sm text-slate-500 mb-3 flex items-center gap-2">
+                                    <i class="fab fa-youtube text-red-600"></i> Video dars:
+                                </p>
+                                <div class="video-container">
+                                    <iframe 
+                                        src="https://www.youtube.com/embed/{{ data.youtube_id }}?rel=0&modestbranding=1" 
+                                        title="{{ data.resource.title }}"
+                                        frameborder="0" 
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                        referrerpolicy="strict-origin-when-cross-origin"
+                                        allowfullscreen>
+                                    </iframe>
+                                </div>
+                                
+                            {# 2. GOOGLE DRIVE #}
+                            {% elif data.google_drive_id %}
+                                <p class="text-sm text-slate-500 mb-3 flex items-center gap-2">
+                                    <i class="fab fa-google-drive text-blue-600"></i> Google Drive fayli:
+                                </p>
+                                <div class="document-container">
+                                    <iframe 
+                                        src="https://drive.google.com/file/d/{{ data.google_drive_id }}/preview" 
+                                        allow="autoplay"
+                                        loading="lazy">
+                                    </iframe>
+                                </div>
+                               
+
+                            {# 3. BOSHQA BARCHA LINKLAR #}
+                            {% else %}
+                                <p class="text-sm text-slate-500 mb-3 flex items-center gap-2">
+                                    <i class="fas fa-link text-purple-600"></i> Havola:
+                                </p>
+                                <div class="flex flex-col md:flex-row items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                    <div class="flex-grow w-full overflow-hidden">
+                                        <p class="text-slate-600 font-medium truncate">
+                                            {{ data.resource.link|default:'Link mavjud emas' }}
+                                        </p>
+                                    </div>
+                                    {% if data.resource.link %}
+                                        <a href="{{ data.resource.link }}" 
+                                           target="_blank" 
+                                           class="flex-shrink-0 w-full md:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                                            {% if "t.me" in data.resource.link %}
+                                                <i class="fab fa-telegram-plane"></i> Telegram'da ochish
+                                            {% elif "docs.google.com" in data.resource.link %}
+                                                <i class="fab fa-google"></i> Google Docs'da ochish
+                                            {% else %}
+                                                <i class="fas fa-external-link-alt"></i> Ochish
+                                            {% endif %}
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+
+                        </div>
+                        
+                        {# Ko'rildi deb belgilash #}
+                        <div class="mt-5 pt-4 border-t border-slate-100 flex justify-end">
+                            {% if not data.is_viewed %}
+                                <form method="POST" action="{% url 'mark_resource_viewed' center.slug data.resource.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                                        <i class="fas fa-check-square"></i> Ko'rildi deb belgilash
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="text-sm font-medium text-green-600">
+                                    <i class="fas fa-check-double"></i> Tugallangan resurs
+                                </span>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                {% endfor %}
+            </div>
+            
+        {% else %}
+            <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 text-center">
+                <i class="fas fa-info-circle text-5xl text-indigo-400 mb-3"></i>
+                <p class="text-slate-600 font-medium">Bu dars uchun hali resurslar yuklanmagan.</p>
+            </div>
+        {% endif %}
+
+        <hr class="mt-8 md:mt-10">
+
+        {# TESTGA O'TISH #}
+        {% if has_exam %}
+            <div class="bg-indigo-50 p-6 md:p-8 rounded-2xl shadow-xl border border-indigo-200 mt-8 md:mt-10 flex flex-col md:flex-row justify-between items-center">
+                <div>
+                    <h3 class="text-2xl font-bold text-indigo-800 mb-1">
+                        <i class="fas fa-pencil-alt"></i> Darsni Yakunlash Testi
+                    </h3>
+                    <p class="text-indigo-600">Barcha materiallarni ko'rib bo'lgach, testni boshlashingiz mumkin.</p>
+                </div>
+                <form method="POST" action="{% url 'start_exam_view' center.slug exam_id %}" class="mt-4 md:mt-0 flex-shrink-0">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'course_roadmap' center.slug course.id %}">
+                    <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white text-base font-medium rounded-xl shadow-lg hover:bg-indigo-700 transition">
+                        <i class="fas fa-forward"></i> Testga o'tish
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+
+        {# Orqaga qaytish #}
+        <div class="mt-8 md:mt-10 pt-4 border-t border-slate-200">
+            <a href="{% url 'course_roadmap' center.slug course.id %}"
+                class="inline-flex items-center justify-center gap-3 sm:gap-4 px-6 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-indigo-600 to-purple-700 text-white text-base sm:text-xl font-bold rounded-full shadow-2xl hover:shadow-3xl transition-all active:scale-95 w-full sm:w-auto">
+                <i class="fas fa-arrow-left"></i> Roadmapga qaytish
+            </a>
+        </div>
+        
+
+    </div>
+</div>
+
+<style>
+/* Video container */
+.video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 */
+    height: 0;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* Document container */
+.document-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 75%;
+    height: 0;
+    min-height: 600px;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.document-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+</style>
+{% endblock content %}

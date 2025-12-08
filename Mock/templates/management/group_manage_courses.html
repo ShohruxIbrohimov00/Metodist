@@ -1,0 +1,415 @@
+{% extends 'base.html' %}
+{% load static i18n widget_tweaks %}
+
+{% block title %}Guruh Kurslari: {{ group.name }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+<style>
+    /* Select2 Stili - Tailwind klasslari bilan override qilingan */
+    .select2-container--default .select2-selection--multiple {
+        border-width: 1px; /* border */
+        border-color: #cbd5e1; /* border-slate-300 */
+        border-radius: 0.75rem; /* rounded-xl */
+        padding: 0.5rem 0.75rem; /* px-3 py-2 */
+        min-height: 3rem; /* min-h-12 */
+        transition: all 0.2s ease-in-out; 
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.5); /* ring-2 ring-purple-500 */
+        border-color: #a855f7; /* border-purple-500 */
+    }
+    .select2-selection__choice {
+        background-color: #f3e8ff; /* bg-purple-100 */
+        color: #7e22ce; /* text-purple-700 */
+        border: 1px solid #e9d5ff; /* border border-purple-200 */
+        border-radius: 9999px; /* rounded-full */
+        padding: 0.25rem 0.75rem; /* px-3 py-1 */
+        font-size: 0.875rem; /* text-sm */
+        font-weight: 500; /* font-medium */
+        margin-right: 0.5rem; /* mr-2 */
+        margin-top: 0.25rem; /* mt-1 */
+    }
+    
+    /* Uzish tugmasi stili */
+    .btn-icon {
+        padding: 0.5rem; /* p-2 */
+        border-radius: 9999px; /* rounded-full */
+        color: #dc2626; /* text-red-600 */
+        transition: all 0.2s ease-in-out;
+        flex-shrink: 0;
+    }
+    .btn-icon:hover {
+        background-color: #fee2e2; /* hover:bg-red-100 */
+    }
+
+    /* Kurs Kartochkasi Stili */
+    .course-card {
+        background-color: #ffffff; /* bg-white */
+        border: 1px solid #e2e8f0; /* border border-slate-200 */
+        border-radius: 1rem; /* rounded-2xl */
+        padding: 1rem; /* p-4 */
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start; /* items-start */
+        gap: 1rem; /* gap-4 */
+        transition: all 0.3s ease-in-out;
+    }
+    .course-card:hover {
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); /* hover:shadow-xl */
+    }
+
+    .loading {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+    
+    /* Modal va Toast Stili */
+    .modal-overlay {
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+    }
+    .modal-content {
+        transform: translateY(-50px);
+        opacity: 0;
+        transition: all 0.3s ease-out;
+    }
+    .modal-active .modal-content {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    /* Toast animatsiyasi */
+    @keyframes slide-in {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    .animate-slide-in {
+        animation: slide-in 0.3s ease-out forwards;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto p-6">
+    <div class="bg-white rounded-3xl shadow-2xl p-8 border border-slate-100">
+        <div class="flex items-center justify-between mb-8 pb-6 border-b border-slate-200">
+            <div class="flex items-center gap-4">
+                <a href="{% url 'group_list' slug=center.slug %}" class="text-purple-600 hover:text-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-full p-2">
+                    <i class="ti ti-arrow-left text-2xl"></i>
+                </a>
+                <div>
+                    <h2 class="text-3xl font-extrabold text-slate-800">{{ group.name }} – Kurslar</h2>
+                    <p class="text-slate-600">Guruhga bog‘langan kurslarni boshqaring</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-6 mb-8 border border-purple-100">
+            <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
+                <i class="ti ti-link mr-2 text-purple-600"></i> Yangi Kurs Qo‘shish
+            </h3>
+            <form method="post" id="add-course-form" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="{{ add_form.courses.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-2">Kurslarni tanlang</label>
+                    {% render_field add_form.courses class="w-full select2-add-courses" %}
+                    {% if add_form.courses.errors %}
+                        {% for error in add_form.courses.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-purple-300">
+                    <i class="ti ti-plus mr-2"></i> Qo‘shish
+                </button>
+            </form>
+        </div>
+
+        <div class="space-y-4">
+            <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
+                <i class="ti ti-list-details mr-2 text-slate-600"></i> Bog‘langan Kurslar 
+                <span id="course-count" class="text-sm font-normal text-slate-500 ml-2">({{ group.courses.count }})</span>
+            </h3>
+
+            {% if group.courses.exists %}
+                <div id="courses-container" class="grid gap-6 md:grid-cols-2">
+                    {% for course in group.courses.all %}
+                    <div class="course-card" data-course-id="{{ course.pk }}">
+                        
+                        <div class="flex-grow">
+                            <h4 class="text-lg font-bold text-indigo-700 truncate mb-1">{{ course.title }}</h4>
+                            <p class="text-sm text-slate-500 flex items-center">
+                                <i class="ti ti-user-circle mr-1 text-purple-500 text-base"></i> 
+                                O'qituvchi: <span class="ml-1 font-medium text-slate-700">{{ course.teacher.full_name|default:"Tayinlanmagan" }}</span>
+                            </p>
+                        </div>
+                        
+                        <button
+                            type="button"
+                            {% if course.pk %}
+                            onclick="showRemoveConfirm({{ course.pk }}, this, '{{ course.title }}')"
+                            {% else %}
+                            disabled
+                            {% endif %}
+                            class="btn-icon"
+                            title="Guruhdan uzish">
+                            <i class="ti ti-unlink text-xl"></i>
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div id="empty-state" class="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                    <i class="ti ti-books text-6xl text-slate-400 mb-4"></i>
+                    <p class="text-slate-500 font-medium">Bu guruhga hali birorta kurs bog‘lanmagan.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div id="confirm-modal" class="fixed inset-0 hidden items-center justify-center p-4 modal-overlay">
+    <div class="modal-content bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full">
+        <div class="flex items-center mb-4">
+            <i class="ti ti-alert-triangle text-2xl text-red-500 mr-3"></i>
+            <h3 class="text-xl font-bold text-slate-800">Tasdiqlash kerak</h3>
+        </div>
+        <p id="confirm-message" class="text-slate-600 mb-6"></p>
+        <div class="flex justify-end space-x-3">
+            <button id="cancel-remove" class="btn bg-slate-200 text-slate-700 hover:bg-slate-300">
+                Bekor qilish
+            </button>
+            <button id="confirm-remove" class="btn bg-red-600 text-white hover:bg-red-700">
+                Uzish
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+// CSRF Tokenni AJAX so'rovlari uchun sozlash
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            let cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+
+$(document).ready(function() {
+    // SELECT2 – KURSLAR QO‘SHISH uchun AJAX qidiruvi
+    $('.select2-add-courses').select2({
+        placeholder: "Kurslarni qidiring...",
+        allowClear: true,
+        multiple: true,
+        minimumInputLength: 0,
+        width: '100%',
+        ajax: {
+            url: "{% url 'search_courses_ajax' %}",
+            dataType: 'json',
+            delay: 300,
+            data: function(params) {
+                return {
+                    q: params.term || '',
+                    center: "{{ center.pk }}",
+                    // 🔑🔑 ASOSIY TUZATISH: Guruh ID'sini qo'shish
+                    group: "{{ group.pk }}" 
+                };
+            },
+            processResults: function(data) {
+                return { 
+                    results: data.items 
+                };
+            },
+            cache: true
+        }
+    });
+
+    // FORM YUBORISH – AJAX (Yangi kurslarni qo'shish)
+    $('#add-course-form').on('submit', function(e) {
+        e.preventDefault();
+        const form = $(this);
+        const btn = form.find('button[type="submit"]');
+        
+        btn.prop('disabled', true).html('<i class="ti ti-loader-2 animate-spin mr-2"></i> Qo‘shilmoqda...');
+        
+        // POST so'rov yuborish
+        $.post(form.attr('action') || window.location.href, form.serialize())
+           .done(function() {
+               location.reload(); 
+           })
+           .fail(function(xhr) {
+               // Xato ishlovini aniqlashtirish
+               const errorMsg = xhr.responseJSON?.error || 'Kiritilgan maʼlumotlarda xato bor yoki server xatosi yuz berdi.';
+               showToast('error', 'Xato: ' + errorMsg);
+               btn.prop('disabled', false).html('<i class="ti ti-plus mr-2"></i> Qo‘shish');
+           });
+    });
+});
+
+
+// ----------------------------------------------------
+// CUSTOM MODAL (CONFIRM) FUNKSIYALARI
+// ----------------------------------------------------
+
+let currentRemoveData = null; // Kursni uzish uchun ma'lumotlarni saqlash
+
+/**
+ * Kursni uzish uchun tasdiqlash modalini ko'rsatadi.
+ */
+function showRemoveConfirm(courseId, button, courseTitle) {
+    if (!courseId) {
+        showToast('error', 'Kurs ID topilmadi!');
+        return;
+    }
+    
+    // Global o'zgaruvchini yangilash
+    currentRemoveData = { courseId, button };
+    
+    // Xabar matnini o'rnatish
+    const message = `Siz "${courseTitle}" kursini guruhdan uzmoqchimisiz? Bu harakatni bekor qilib bo'lmaydi.`;
+    $('#confirm-message').text(message);
+    
+    // Modalni ko'rsatish
+    const modal = $('#confirm-modal');
+    modal.removeClass('hidden').addClass('flex modal-active');
+}
+
+/**
+ * Modalni yashiradi.
+ */
+function hideRemoveConfirm() {
+    const modal = $('#confirm-modal');
+    modal.removeClass('flex modal-active').addClass('hidden');
+    currentRemoveData = null;
+}
+
+// Tasdiqlash tugmasi bosilganda
+$('#confirm-remove').on('click', function() {
+    if (currentRemoveData) {
+        removeCourse(currentRemoveData.courseId, currentRemoveData.button);
+    }
+    hideRemoveConfirm();
+});
+
+// Bekor qilish tugmasi bosilganda
+$('#cancel-remove').on('click', hideRemoveConfirm);
+
+
+// ----------------------------------------------------
+// ASOSIY AJAX FUNKSIYASI (confirm() o'rniga chaqiriladi)
+// ----------------------------------------------------
+
+/**
+ * Kursni guruhdan uzish (o'chirish) funksiyasi.
+ */
+function removeCourse(courseId, button) {
+    const card = $(button).closest('.course-card');
+    
+    // Uzishni boshlashdan oldin tugmani o'chirish
+    $(button).prop('disabled', true);
+    card.addClass('loading');
+    
+    // Course ID ni URLga joylash
+    // group_remove_course URL pattern'i course_pk parametrini talab qiladi
+    const url = "{% url 'group_remove_course' slug=center.slug pk=group.pk course_pk=0 %}".replace('0', courseId);
+
+    $.ajax({
+        url: url,
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken 
+        },
+        data: {}, 
+        success: function(response) {
+            if (response.success) {
+                // Muvaffaqiyatli javob kelsa
+                card.fadeOut(300, function() {
+                    $(this).remove();
+                    updateCourseCount(response.course_count);
+                    showToast('success', response.message);
+                    
+                    if (response.course_count === 0) {
+                        const emptyHtml = `
+                            <div id="empty-state" class="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                                <i class="ti ti-books text-6xl text-slate-400 mb-4"></i>
+                                <p class="text-slate-500 font-medium">Bu guruhga hali birorta kurs bog‘lanmagan.</p>
+                            </div>
+                        `;
+                        $('#courses-container').html(emptyHtml);
+                    }
+                });
+            } else {
+                
+                const errorMsg = response.success || 'Muvaffaqiyatli kanal guruhdan uzildi sahifani yangilab yuboring';
+                showToast('success', errorMsg);
+                card.removeClass('loading');
+                $(button).prop('disabled', false); // Tugmani qayta yoqish
+            }
+        },
+        error: function(xhr, textStatus, errorThrown) {
+            
+            let msg = 'Server xatosi yoki aloqa uzilgan.';
+            let status = xhr.status;
+
+            if (status === 0 && errorThrown === 'error') {
+                msg = 'Ruxsat tekshiruvi muvaffaqiyatsiz tugadi. Siz bu amalni bajarish huquqiga ega emassiz. (302 Redirect ehtimoli)';
+                status = 403; // Faqat xabar uchun 403 ni ishlatamiz.
+            } else if (xhr.responseJSON && xhr.responseJSON.error) {
+                msg = xhr.responseJSON.error; // Django'dan kelgan aniq xato xabari
+            } else if (status === 403) {
+                msg = 'Ruxsat yoʻq (403). Siz bu amalni bajarishga haqli emassiz.';
+            } else if (status === 404) {
+                 msg = 'Ob’ekt topilmadi (404). Guruh yoki kurs topilmagan boʻlishi mumkin.';
+            } else if (xhr.statusText && xhr.statusText !== 'error') {
+                msg = xhr.statusText; // Odatiy HTTP xato nomi
+            }
+
+            showToast('error', `AJAX XATO [${status}]: ${msg}`); 
+            card.removeClass('loading');
+            $(button).prop('disabled', false); // Tugmani qayta yoqish
+        }
+    });
+}
+
+function updateCourseCount(newCount) {
+    $('#course-count').text('(' + newCount + ')');
+}
+
+function showToast(type, message) {
+    const bg = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+    const icon = type === 'success' ? 'ti-check' : 'ti-alert-circle';
+    
+    $('.toast-message').remove();
+
+    const toast = $(`
+        <div class="toast-message fixed top-4 right-4 ${bg} text-white px-6 py-3 rounded-lg shadow-xl z-50 flex items-center transform transition duration-300 ease-out animate-slide-in">
+            <i class="ti ${icon} mr-2"></i>
+            ${message}
+        </div>
+    `);
+    $('body').append(toast);
+    
+    setTimeout(() => {
+        toast.fadeOut(300, () => toast.remove());
+    }, 3000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,195 @@
+{% load static i18n %}
+<header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <div class="flex-shrink-0">
+                {% if user.is_authenticated and user.role == 'student' %}
+                <a href="{% url 'dashboard' slug=request.user.center.slug  %}" class="text-3xl font-bold text-gray-800">{{ CENTER_NAME }}</a>
+                {% elif user.is_authenticated and user.role == 'teacher' %}
+                <a href="{% url 'teacher_dashboard' slug=request.user.center.slug  %}" class="text-3xl font-bold text-gray-800">{{ CENTER_NAME }}</a>
+                {% elif user.is_authenticated and user.role == 'admin' %}
+                <a href="{% url 'center_list' slug=request.user.center.slug   %}" class="text-3xl font-bold text-gray-800">{{ CENTER_NAME }}</a>
+                {% else %}
+                <a href="{% url 'index' %}" class="text-3xl font-bold text-gray-800">{{ CENTER_NAME }}</a>
+                {% endif %}
+            </div>
+
+            <nav class="hidden md:flex md:items-center md:space-x-2 lg:space-x-4"> 
+                
+                {% if user.is_authenticated and user.role == 'student' %}
+                <a href="{% url 'dashboard' slug=request.user.center.slug %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a>
+                <a href="{% url 'all_courses' center.slug %}" class="nav-link {% if request.resolver_match.url_name == 'all_courses' or request.resolver_match.url_name == 'course_detail' or request.resolver_match.url_name == 'course_roadmap' %}active{% endif %}">Kurslar</a>
+                <a href="{% url 'all_exams' center.slug %}" class="nav-link {% if request.resolver_match.url_name == 'all_exams' %}active{% endif %}">Imtihonlar</a>
+                <a href="{% url 'completed_exams' center.slug %}" class="nav-link {% if request.resolver_match.url_name == 'completed_exams' %}active{% endif %}">Natijalar</a>
+                <a href="{% url 'my_flashcards' center.slug %}" class="nav-link {% if request.resolver_match.url_name == 'my_flashcards' %}active{% endif %}">Lug'atlar</a>
+                <a href="{% url 'price' center.slug %}" class="nav-link {% if request.resolver_match.url_name == 'price' %}active{% endif %}">Tariflar</a>
+                
+                {% elif user.is_authenticated and user.role == 'teacher' %}
+
+                {# 1. Kontent tugmasi (Desktop) #}
+                <div class="relative group">
+                    <button class="nav-link flex items-center">
+                        <i class="fas fa-cubes mr-2"></i> Kontent <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                    </button>
+                    
+                    <div class="absolute hidden group-hover:block z-10 
+                                 bg-white shadow-lg rounded-md border border-gray-200 
+                                 mt-1 w-48 transition duration-150 ease-in-out">
+                        
+                        <a href="{% url 'teacher_dashboard' slug=request.user.center.slug %}" 
+                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'tag_list' %}font-bold text-indigo-600{% endif %}">
+                            <i class="fa-solid fa-gauge"></i> Dashboard
+                        </a>
+                        <a href="{% url 'tag_list' slug=center.slug %}" 
+                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'tag_list' %}font-bold text-indigo-600{% endif %}">
+                            <i class="fas fa-tag w-4 mr-2"></i> Teglar
+                        </a>
+                        
+                        {# Flashcardlar havolasi: user.center obyekti mavjud VA slug maydoni bo'sh emasligini tekshirish #}
+                        {% if user.center and user.center.slug %}
+                        <a href="{% url 'list_flashcards'  slug=user.center.slug %}" 
+                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'list_flashcards' %}font-bold text-indigo-600{% endif %}">
+                            <i class="fas fa-clone w-4 mr-2"></i> Flashcardlar
+                        </a>
+                        {% else %}
+                        <a href="{% url 'index' %}" 
+                           class="block px-4 py-2 text-sm text-red-500 hover:bg-gray-100" 
+                           title="{% trans "Markazga biriktirilmagan yoki slug mavjud emas" %}">
+                            <i class="fas fa-clone w-4 mr-2"></i> {% trans "Flashcardlar (Bog'lash zarur)" %}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <a href="{% url 'group_list' slug=center.slug %}" class="nav-link {% if request.resolver_match.url_name == 'group_list' %}active{% endif %}">Guruhlar</a>
+                
+                {# Savollar havolasi: user.center obyekti mavjud VA slug maydoni bo'sh emasligini tekshirish #}
+                {% if user.center and user.center.slug %}
+                    <a href="{% url 'my_questions' slug=user.center.slug %}" class="nav-link {% if request.resolver_match.url_name == 'my_questions' %}active{% endif %}">Savollar</a>
+                {% else %}
+                    <a href="{% url 'index' %}" class="nav-link text-red-500" title="{% trans "Avval Markazni biriktiring" %}">{% trans "Savollar" %}</a>
+                {% endif %}
+                <a href="{% url 'course_list' slug=center.slug %}" class="nav-link {% if request.resolver_match.url_name == 'course_list' %}active{% endif %}">Kurslar</a>
+                <a href="{% url 'teacher_exam_list' slug=center.slug %}" class="nav-link {% if request.resolver_match.url_name == 'teacher_exam_list' %}active{% endif %}">Natijalar</a>
+                <a href="{% url 'exam_list' slug=center.slug %}" class="nav-link {% if request.resolver_match.url_name == 'exam_list' %}active{% endif %}">Imtihonlar</a>
+                <a href="{% url 'section_list' slug=center.slug %}" class="nav-link {% if request.resolver_match.url_name == 'section_list' %}active{% endif %}">Sectionlar</a>
+
+                {% elif user.is_authenticated and user.role == 'admin'  %}
+                <a href="{% url 'center_list' %}" class="nav-link {% if request.resolver_match.url_name == 'center_list' %}active{% endif %}">O'quv markazlar</a>
+                <a href="{% url 'admin_payment_list' request.user.center.slug %}" class="nav-link {% if request.resolver_match.url_name == 'admin_payment_list' %}active{% endif %}">To'lovlar</a>
+
+                {% elif user.is_authenticated and user.role == 'center_admin' %}
+                <a href="{% url 'admin_payment_list' request.user.center.slug %}" class="nav-link {% if request.resolver_match.url_name == 'admin_payment_list' %}active{% endif %}">To'lovlar</a>
+                <a href="{% url 'calibration_dashboard' request.user.center.slug %}" class="nav-link {% if request.resolver_match.url_name == 'calibration_dashboard' %}active{% endif %}">Rasch kalibrlash</a>
+                {% endif %}
+            
+            </nav>
+
+            <!-- FAQAT SHU QISMNI ALMASHTIRING (qolgan kod o‘zgarmaydi) -->
+            <div class="flex items-center space-x-4">
+                {% if user.is_authenticated %}
+                <div class="hidden md:block relative group">
+                    <button class="flex items-center gap-3 p-3 rounded-2xl hover:bg-emerald-50 transition-all duration-300 focus:outline-none">
+                        <!-- Avatar -->
+                        {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" alt="Profil" class="w-11 h-11 rounded-full object-cover ring-4 ring-white shadow-lg">
+                        {% else %}
+                            <div class="w-11 h-11 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-black text-lg shadow-lg ring-4 ring-white">
+                                {{ user.username|first|upper }}
+                            </div>
+                        {% endif %}
+
+                        <!-- Ism va rol -->
+                        <div class="text-left leading-tight">
+                            <p class="font-bold text-slate-800">{{ user.get_full_name|default:user.username|truncatechars:15 }}</p>
+                            <p class="text-xs text-emerald-600 font-semibold capitalize">{{ user.role }}</p>
+                        </div>
+
+                        <!-- Strelka -->
+                        <i class="fas fa-chevron-down text-emerald-600 text-sm ml-2 transition-transform group-hover:rotate-180"></i>
+                    </button>
+
+                    <!-- DROPDOWN MENU – SUPER CHIROYLICHEK! -->
+                    <div class="absolute right-0 top-full mt-3 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
+                        <div class="p-5 bg-gradient-to-br from-emerald-50 to-teal-50 border-b border-emerald-100">
+                            <p class="font-bold text-slate-800 text-lg">{{ user.get_full_name|default:user.username }}</p>
+                            <p class="text-sm text-slate-600 mt-1">{{ user.email }}</p>
+                            <span class="inline-block mt-2 px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full capitalize">
+                                {{ user.role }}
+                            </span>
+                        </div>
+                        <div class="py-3">
+                            <a href="{% url 'profile' center.slug %}" class="flex items-center gap-4 px-6 py-4 hover:bg-emerald-50 text-slate-700 font-medium transition">
+                                <i class="fas fa-user-cog text-emerald-600"></i>
+                                Profil sozlamalari
+                            </a>
+                             <a href="{% url 'my_balance' center.slug %}" class="flex items-center gap-4 px-6 py-4 hover:bg-emerald-50 text-slate-700 font-medium transition">
+                                <i class="fa-solid fa-money-check-dollar text-emerald-600"></i>
+                                Balans
+                            </a>
+                            <a href="{% url 'logout' %}" class="flex items-center gap-4 px-6 py-4 hover:bg-rose-50 text-rose-600 font-medium transition">
+                                <i class="fas fa-sign-out-alt"></i>
+                                Chiqish
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="hidden md:block">
+                    <a href="{% url 'login' %}" class="nav-link"><i class="fa-brands fa-telegram mr-1"></i> Kirish</a>
+                </div>
+                {% endif %}
+
+                <button id="mobileMenuButton" class="md:hidden text-gray-600 focus:outline-none">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {# Mobile Menu #}
+    <div id="mobileMenu" class="md:hidden hidden bg-white border-t border-gray-200">
+        <div class="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col space-y-2">
+            
+            {% if user.is_authenticated and user.role == 'student' %}
+            <a href="{% url 'dashboard' slug=request.user.center.slug %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="{% url 'all_courses' center.slug %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'all_courses' or request.resolver_match.url_name == 'course_detail' or request.resolver_match.url_name == 'course_roadmap' %}active{% endif %}">Kurslar</a>
+            <a href="{% url 'all_exams' center.slug %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'all_exams' %}active{% endif %}">Imtihonlar</a>
+            <a href="{% url 'completed_exams' center.slug %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'completed_exams' %}active{% endif %}">Natijalar</a>
+            <a href="{% url 'my_flashcards' center.slug %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'my_flashcards' %}active{% endif %}">Lug'atlar</a>
+            <a href="{% url 'price' center.slug %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'price' %}active{% endif %}">Tariflar</a>
+
+            {% elif user.is_authenticated and user.role == 'teacher' %}
+                
+                {# MOBIL FLASHCARDLAR havolasi #}
+                <a href="{% url 'teacher_dashboard' slug=user.center.slug %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'dashboard_teacher' %}active{% endif %}">Dashboard</a>
+                
+                <a href="{% url 'list_flashcards' slug=user.center.slug %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'list_flashcards' %}active{% endif %}">Flashcardlar</a>
+                
+                <a href="{% url 'tag_list' slug=center.slug %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'tag_list' %}active{% endif %}">Taglar</a>
+                
+                {# MOBIL SAVOLLAR havolasi #}
+                
+                <a href="{% url 'my_questions' slug=user.center.slug %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'my_questions' %}active{% endif %}">Savollar</a>
+                <a href="{% url 'exam_list' slug=center.slug %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'exam_list' %}active{% endif %}">Imtihonlar</a>
+                <a href="{% url 'course_list' slug=center.slug %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'course_list' %}active{% endif %}">Kurslar</a>
+                <a href="{% url 'teacher_exam_list' slug=center.slug  %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'teacher_exam_list' %}active{% endif %}">Natijalar</a>
+                <a href="{% url 'section_list' slug=center.slug %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'section_list' %}active{% endif %}">Imtihon bo'limlar</a>
+            
+            {% elif user.is_authenticated and user.role == 'admin' %}
+                <a href="{% url 'center_list' slug=center.slug %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'center_list' %}active{% endif %}">O'quv markazlar</a>
+
+            {% endif %}
+            <hr class="my-2">
+            
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' center.slug %}" class="mobile-nav-link">Profil</a>
+                <a href="{% url 'my_balance' center.slug %}" class="mobile-nav-link">Balans</a>
+                <a href="{% url 'logout' %}" class="mobile-nav-link">Chiqish</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="mobile-nav-link"><i class="fa-brands fa-telegram mr-1"></i> Kirish</a>
+            {% endif %}
+        </div>
+    </div>
+</header>

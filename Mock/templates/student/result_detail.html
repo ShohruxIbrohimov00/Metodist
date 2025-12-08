@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ attempt.exam.title }} – Batafsil Natija{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script>
+    MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, svg: { fontCache: 'global' } };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+    .score-card { transition: all 0.4s ease; }
+    .score-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+    .question-btn.active { transform: scale(1.15); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.5); z-index: 10; }
+    .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-4 sm:py-8 px-3 sm:px-4">
+    <div class="max-w-6xl mx-auto">
+
+        <!-- SARLAVHA -->
+        <div class="text-center mb-6 sm:mb-10">
+            <h1 class="text-2xl sm:text-3xl md:text-5xl font-extrabold text-slate-800 px-2">
+                <span class="bg-gradient-to-r from-indigo-600 to-purple-700 bg-clip-text text-transparent">
+                    {{ attempt.exam.title }}
+                </span>
+            </h1>
+            <p class="mt-3 sm:mt-4 text-base sm:text-lg text-slate-600 font-medium px-2">
+                {% if attempt.exam.is_subject_exam %}
+                    <span class="text-emerald-600 font-bold">Mavzu Testi</span>
+                {% else %}
+                    <span class="text-indigo-600 font-bold">To'liq SAT Imtihoni</span>
+                {% endif %}
+                • {{ attempt.completed_at|date:"d M Y, H:i" }}
+            </p>
+        </div>
+
+        <!-- ASOSIY NATIJA -->
+        <div class="glass rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-8 md:p-12 mb-8 sm:mb-12 border border-white/50">
+
+            <!-- SAT IMTIHONI → 1600 BALLIK KARTALAR -->
+            {% if not attempt.exam.is_subject_exam %}
+                <div class="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-1 lg:grid-cols-3 sm:gap-8 mb-6 sm:mb-10">
+                    <!-- JAMI BALL -->
+                    <div class="score-card bg-gradient-to-br from-indigo-600 to-purple-700 text-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl text-center shadow-xl">
+                        <p class="text-base sm:text-xl font-bold mb-2 opacity-90">JAMI BALL</p>
+                        <p class="text-6xl sm:text-7xl md:text-8xl font-extrabold">
+                            {{ attempt.final_total_score|default:"–" }}
+                        </p>
+                        <p class="text-sm sm:text-lg opacity-80 mt-2">1600 dan</p>
+                    </div>
+
+                    <!-- EBRW + MATH -->
+                    <div class="grid grid-cols-2 gap-3 sm:gap-6 sm:col-span-2">
+                        <div class="score-card bg-gradient-to-br from-sky-500 to-blue-600 text-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl text-center shadow-lg">
+                            <p class="text-sm sm:text-lg font-bold mb-1">EBRW</p>
+                            <p class="text-4xl sm:text-5xl md:text-6xl font-extrabold">
+                                {{ attempt.final_ebrw_score|default:"–" }}
+                            </p>
+                            <p class="text-xs sm:text-base opacity-90 mt-1">800 dan</p>
+                        </div>
+                        <div class="score-card bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl text-center shadow-lg">
+                            <p class="text-sm sm:text-lg font-bold mb-1">Matematika</p>
+                            <p class="text-4xl sm:text-5xl md:text-6xl font-extrabold">
+                                {{ attempt.final_math_score|default:"–" }}
+                            </p>
+                            <p class="text-xs sm:text-base opacity-90 mt-1">800 dan</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FOIZ -->
+                <div class="text-center mb-6 sm:mb-8">
+                    <p class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-700">
+                        {{ total_percentage|floatformat:1 }}%
+                    </p>
+                    <p class="text-base sm:text-lg text-slate-600 mt-2 font-medium">
+                        Umumiy to'g'ri javoblar foizi
+                    </p>
+                </div>
+
+            <!-- MAVZU TESTI → FOIZ -->
+            {% else %}
+                <div class="text-center mb-6 sm:mb-10">
+                    <div class="inline-block score-card bg-gradient-to-br from-emerald-500 to-teal-600 text-white px-8 sm:px-16 py-8 sm:py-14 rounded-2xl sm:rounded-3xl shadow-2xl w-full sm:w-auto">
+                        <p class="text-lg sm:text-2xl font-bold mb-3 sm:mb-4">Yakuniy Natija</p>
+                        <p class="text-6xl sm:text-8xl font-extrabold leading-none">
+                            {{ total_percentage|floatformat:0 }}%
+                        </p>
+                        <p class="text-base sm:text-xl mt-4 sm:mt-6 font-medium">
+                            {{ total_correct }} / {{ total_questions }} savol
+                        </p>
+                        {% if total_percentage >= attempt.exam.passing_percentage %}
+                            <p class="mt-4 sm:mt-6 text-2xl sm:text-3xl font-bold text-emerald-200 animate-pulse">O'TGAN!</p>
+                        {% else %}
+                            <p class="mt-4 sm:mt-6 text-xl sm:text-2xl font-bold text-rose-300">
+                                O'TMADI ({{ attempt.exam.passing_percentage }}% kerak)
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- STATISTIKA -->
+            <div class="grid grid-cols-3 gap-3 sm:gap-6 text-center">
+                <div class="bg-emerald-50/80 p-3 sm:p-6 rounded-xl sm:rounded-2xl border-2 border-emerald-200">
+                    <p class="text-3xl sm:text-5xl font-extrabold text-emerald-700">{{ total_correct }}</p>
+                    <p class="text-xs sm:text-lg font-bold text-emerald-600 mt-1 sm:mt-2">To'g'ri</p>
+                </div>
+                <div class="bg-rose-50/80 p-3 sm:p-6 rounded-xl sm:rounded-2xl border-2 border-rose-200">
+                    <p class="text-3xl sm:text-5xl font-extrabold text-rose-700">{{ total_incorrect }}</p>
+                    <p class="text-xs sm:text-lg font-bold text-rose-600 mt-1 sm:mt-2">Xato</p>
+                </div>
+                <div class="bg-amber-50/80 p-3 sm:p-6 rounded-xl sm:rounded-2xl border-2 border-amber-200">
+                    <p class="text-3xl sm:text-5xl font-extrabold text-amber-700">{{ total_omitted }}</p>
+                    <p class="text-xs sm:text-lg font-bold text-amber-600 mt-1 sm:mt-2">O'tkazib</p>
+                </div>
+            </div>
+
+            <!-- QULF HOLATI -->
+            {% if attempt.exam.is_subject_exam and not can_view_solution %}
+            <div class="mt-6 sm:mt-10 p-4 sm:p-8 bg-gradient-to-r from-rose-100 to-pink-100 border-l-4 sm:border-l-8 border-rose-500 rounded-xl sm:rounded-2xl">
+                <div class="flex items-center gap-3 sm:gap-5">
+                    <i class="fas fa-lock text-3xl sm:text-5xl text-rose-600"></i>
+                    <div>
+                        <p class="text-base sm:text-xl md:text-2xl font-bold text-rose-800">Yechimlar hali ochilmagan</p>
+                        <p class="text-sm sm:text-base md:text-lg text-rose-700 mt-1 sm:mt-2">
+                            Kamida <strong>{{ attempt.exam.passing_percentage }}%</strong> kerak • Siz: <strong>{{ total_percentage|floatformat:1 }}%</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- SAVOLLAR TAHLILI -->
+        {% if can_view_solution or not attempt.exam.is_subject_exam %}
+        <div class="mt-8 sm:mt-12">
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-center text-slate-800 mb-6 sm:mb-10 px-2">
+                Savollar bo'yicha tahlil
+            </h2>
+
+            {% for section_analysis in section_analysis_list %}
+            <div class="glass rounded-2xl sm:rounded-3xl shadow-xl border border-white/50 p-4 sm:p-8 mb-6 sm:mb-10 question-section">
+                <h3 class="text-xl sm:text-2xl font-bold text-indigo-700 mb-4 sm:mb-6 text-center">
+                    {{ section_analysis.section_name }}
+                    <span class="block sm:inline text-base sm:text-lg font-medium text-slate-600 sm:ml-4 mt-1 sm:mt-0">
+                        ({{ section_analysis.correct_count }} / {{ section_analysis.total_count }})
+                    </span>
+                </h3>
+
+                <div class="flex flex-wrap justify-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+                    {% for item in section_analysis.user_answers_nav %}
+                        {% if item.user_answer_id %}
+                            <button data-user-answer-id="{{ item.user_answer_id }}"
+                                    class="question-btn w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold text-base sm:text-lg shadow-lg transition-all
+                                        {% if item.is_correct %}bg-emerald-500 text-white hover:bg-emerald-600
+                                        {% elif item.is_correct is None %}bg-amber-400 text-slate-800 hover:bg-amber-500
+                                        {% else %}bg-rose-500 text-white hover:bg-rose-600{% endif %}">
+                                {{ forloop.counter }}
+                            </button>
+                        {% else %}
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-300 text-slate-600 flex items-center justify-center font-bold text-base sm:text-lg">
+                                {{ forloop.counter }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <div id="answer-detail-{{ forloop.counter }}"
+                     class="bg-white/70 backdrop-blur rounded-2xl sm:rounded-3xl p-4 sm:p-10 border-2 border-slate-200 min-h-64 sm:min-h-96 shadow-inner text-center">
+                    <div class="py-16 sm:py-24 text-slate-400">
+                        <i class="fas fa-hand-pointer text-5xl sm:text-7xl mb-4 sm:mb-6 text-indigo-400"></i>
+                        <p class="text-lg sm:text-2xl font-bold">Savol raqamini bosing</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- ORQAGA QAYTISH -->
+        <div class="text-center mt-10 sm:mt-16 px-2">
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <!-- Kursga qaytish tugmasi (faqat kursdan kelgan bo'lsa) -->
+                {% if next_url %}
+                <a href="{{ next_url }}"
+                   class="inline-flex items-center justify-center gap-3 sm:gap-4 px-6 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white text-base sm:text-xl font-bold rounded-full shadow-2xl hover:shadow-3xl transition-all active:scale-95 w-full sm:w-auto">
+                    <i class="fas fa-book-reader text-xl sm:text-2xl"></i>
+                    Kursga Qaytish
+                </a>
+                {% endif %}
+                
+                <!-- Barcha urinishlarga qaytish (har doim) -->
+                <a href="{% url 'exam_attempts' center.slug attempt.exam.id %}"
+                   class="inline-flex items-center justify-center gap-3 sm:gap-4 px-6 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-indigo-600 to-purple-700 text-white text-base sm:text-xl font-bold rounded-full shadow-2xl hover:shadow-3xl transition-all active:scale-95 w-full sm:w-auto">
+                    <i class="fas fa-arrow-left text-xl sm:text-2xl"></i>
+                    Barcha Urinishlarga Qaytish
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    let activeButton = null;
+
+    document.querySelectorAll('.question-btn').forEach(btn => {
+        btn.addEventListener('click', async function () {
+            const userAnswerId = this.dataset.userAnswerId;
+            const section = this.closest('.question-section');
+            const container = section.querySelector('[id^="answer-detail-"]');
+
+            if (activeButton && activeButton !== this) {
+                activeButton.classList.remove('ring-4', 'ring-indigo-500', 'scale-120');
+            }
+            this.classList.add('ring-4', 'ring-indigo-500', 'scale-120');
+            activeButton = this;
+
+            container.innerHTML = `<div class="flex justify-center items-center py-24 sm:py-40"><i class="fas fa-spinner fa-spin text-4xl sm:text-6xl text-indigo-600"></i></div>`;
+
+            try {
+                const resp = await fetch(`{% url 'get_answer_detail_ajax' %}?user_answer_id=${userAnswerId}`);
+                const data = await resp.json();
+                container.innerHTML = data.html || `<div class="text-center py-24 sm:py-40 text-rose-600"><p class="text-2xl sm:text-3xl font-bold">Xato yuz berdi</p></div>`;
+                if (window.MathJax) MathJax.typesetPromise([container]);
+            } catch {
+                container.innerHTML = `<div class="text-center py-24 sm:py-40 text-slate-500"><p class="text-2xl sm:text-3xl font-bold">Internet aloqasi yo'q</p></div>`;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

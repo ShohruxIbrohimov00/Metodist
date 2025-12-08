@@ -1,0 +1,755 @@
+/*==========================================================
+ SAT EXAM - TOZA DIZAYN (2025)
+ Faqat kerakli stillar, keraksizlar olib tashlandi
+==========================================================*/
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.sat-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #fff;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/*==========================================================
+ HEADER
+==========================================================*/
+header.sat-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 16px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.question-number-header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.directions-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #0066cc;
+    padding: 0;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.directions-btn:hover {
+    color: #004499;
+    text-decoration: underline;
+}
+
+.section-tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+}
+
+.section-tab {
+    padding: 6px 12px;
+    background-color: #f0f0f0;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.section-tab.active {
+    background-color: #0066cc;
+    color: #fff;
+    border-color: #0066cc;
+}
+
+.section-tab:hover:not(.active) {
+    background-color: #e5e5e5;
+}
+
+.timer-container {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+#timer {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    font-variant-numeric: tabular-nums;
+}
+
+#hide-timer-btn {
+    font-size: 0.75rem;
+    color: #666;
+    background: none;
+    border: 1px solid #ccc;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#hide-timer-btn:hover {
+    background-color: #f5f5f5;
+}
+
+.header-right {
+    display: flex;
+    gap: 12px;
+}
+
+.header-btn {
+    background: none;
+    border: 1px solid #d0d0d0;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.header-btn:hover {
+    background-color: #f5f5f5;
+    border-color: #999;
+}
+
+.header-btn i {
+    font-size: 1rem;
+}
+
+/*==========================================================
+ MAIN CONTENT
+==========================================================*/
+.sat-main-content {
+    flex-grow: 1;
+    padding: 40px 0;
+    background-color: #fafafa;
+}
+
+.question-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px 100px 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.question-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 2px dashed #d0d0d0;
+    margin-bottom: 30px;
+    background-color: #f8f9fa;
+}
+
+#question-number {
+    background-color: #000000;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.mark-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1px solid #d0d0d0;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mark-btn:hover {
+    background-color: #fff8e1;
+    border-color: #ffc107;
+}
+
+.mark-btn.marked {
+    background-color: #fff8e1;
+    border-color: #ffc107;
+    color: #f57c00;
+}
+
+.question-content {
+    padding: 20px;
+}
+
+#question-text {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #1a1a1a;
+    margin-bottom: 30px;
+}
+
+#question-image-container {
+    margin: 30px 0;
+    text-align: center;
+}
+
+#question-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/*==========================================================
+ JAVOB VARIANTLARI
+==========================================================*/
+#answer-options-container {
+    margin-top: 30px;
+}
+
+#answer-options-container label {
+    display: flex;
+    align-items: flex-start;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: #ffffff;
+    gap: 12px;
+    position: relative;
+}
+
+#answer-options-container label::after {
+    content: '';
+    white-space: pre;
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9rem;
+    color: #999;
+    line-height: 1.3;
+    text-align: center;
+}
+
+#answer-options-container label:hover {
+    border-color: #0066cc;
+    background-color: #f0f7ff;
+}
+
+#answer-options-container label.selected {
+    border-color: #0066cc;
+    background-color: #0066cc;
+    color: #ffffff;
+}
+
+#answer-options-container label.selected::after {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+#answer-options-container input[type="radio"],
+#answer-options-container input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    cursor: pointer;
+    accent-color: #0066cc;
+}
+
+.option-letter {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #1a1a1a;
+    min-width: 32px;
+}
+
+#answer-options-container label.selected .option-letter {
+    color: #ffffff;
+}
+
+.option-text {
+    flex: 1;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #333;
+    padding-right: 40px;
+}
+
+#answer-options-container label.selected .option-text {
+    color: #ffffff;
+}
+
+/* SHORT ANSWER INPUT */
+#answer-options-container input[type="text"] {
+    width: 100%;
+    max-width: 400px;
+    padding: 14px;
+    font-size: 1rem;
+    border: 2px solid #d0d0d0;
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.2s;
+    background-color: #fff;
+    color: #1a1a1a;
+}
+
+#answer-options-container input[type="text"]::placeholder {
+    color: #999;
+}
+
+#answer-options-container input[type="text"]:focus {
+    border-color: #0066cc;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.answer-preview-label {
+    display: block;
+    font-size: 0.95rem;
+    color: #666;
+    margin-top: 12px;
+    font-weight: 500;
+}
+
+/*==========================================================
+ FOOTER
+==========================================================*/
+footer.sat-footer {
+    background-color: #ffffff;
+    border-top: 1px solid #e0e0e0;
+    padding: 16px 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.footer-left {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.footer-center {
+    display: flex;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+.question-info {
+    background-color: #1a1a1a;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.question-info:hover {
+    background-color: #333;
+}
+
+.footer-right {
+    display: flex;
+    gap: 12px;
+}
+
+.nav-btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #0066cc;
+    color: #fff;
+}
+
+.nav-btn:hover:not(:disabled) {
+    background-color: #0052a3;
+}
+
+.nav-btn:disabled {
+    background-color: #e0e0e0 !important;
+    color: #999 !important;
+    cursor: not-allowed;
+}
+
+/*==========================================================
+ NAVIGATION MODAL
+==========================================================*/
+.nav-modal {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #fff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    z-index: 5000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    max-width: 800px;
+    width: 90%;
+}
+
+.nav-modal.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.nav-modal .modal-header-custom {
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-align: center;
+    color: #1a1a1a;
+}
+
+#question-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    gap: 10px;
+    padding: 24px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.nav-button {
+    width: 100%;
+    height: 50px;
+    border: 2px solid #d0d0d0;
+    border-radius: 8px;
+    background-color: #fff;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    transition: all 0.2s;
+}
+
+.nav-button:hover {
+    border-color: #999;
+    transform: scale(1.05);
+}
+
+.nav-button.bg-blue-600 {
+    background-color: #0066cc;
+    border-color: #0066cc;
+    color: #fff;
+}
+
+.nav-button.bg-green-500 {
+    background-color: #22c55e;
+    border-color: #22c55e;
+    color: #fff;
+}
+
+.nav-button.bg-yellow-500 {
+    background-color: #ec4899;
+    border-color: #ec4899;
+    color: #fff;
+}
+
+.nav-modal .modal-footer-custom {
+    padding: 16px;
+    border-top: 1px solid #e0e0e0;
+    text-align: center;
+}
+
+.nav-modal .modal-footer-custom button {
+    background: none;
+    border: none;
+    color: #0066cc;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 16px;
+}
+
+.nav-modal .modal-footer-custom button:hover {
+    text-decoration: underline;
+}
+
+/*==========================================================
+ YON PANELLI MODALLAR
+==========================================================*/
+.modal {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    height: 100vh;
+    width: 500px;
+    z-index: 6000;
+    background-color: #fff;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    transition: right 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal.open {
+    right: 0;
+}
+
+#calculator-modal {
+    width: 600px;
+}
+
+.modal-header {
+    padding: 20px;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.modal-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #666;
+    line-height: 1;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+}
+
+.close-btn:hover {
+    color: #000;
+}
+
+.modal-content {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+#desmos-calculator {
+    width: 100%;
+    height: 100%;
+}
+
+/*==========================================================
+ MARKAZIY MODALLAR
+==========================================================*/
+.center-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 7000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.center-modal.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.center-modal .modal-content-wrapper {
+    background: white;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/*==========================================================
+ FORMULA PANEL
+==========================================================*/
+.formula-panel h3 {
+    font-size: 1.2rem;
+    color: #1a1a1a;
+    margin: 20px 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.formula-item {
+    padding: 16px;
+    background-color: #f8f8f8;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.formula-item strong {
+    display: block;
+    font-size: 1.05rem;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+/*==========================================================
+ RESPONSIVE
+==========================================================*/
+@media (max-width: 768px) {
+    .container {
+        padding: 0 12px;
+    }
+
+    header.sat-header {
+        padding: 12px 0;
+    }
+
+    .header-content {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .timer-container {
+        position: static;
+        transform: none;
+    }
+
+    #timer {
+        font-size: 1.4rem;
+    }
+
+    .header-btn span {
+        display: none;
+    }
+
+    .header-btn {
+        padding: 8px;
+    }
+
+    .question-container {
+        padding: 0 12px 80px 12px;
+    }
+
+    .footer-content {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .footer-left {
+        width: 100%;
+        text-align: center;
+    }
+
+    .nav-btn span {
+        display: none;
+    }
+
+    .modal.open {
+        width: 100%;
+    }
+
+    #question-nav-grid {
+        grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+        gap: 8px;
+        padding: 16px;
+    }
+
+    .nav-button {
+        height: 45px;
+    }
+}
+
+/*==========================================================
+ UTILITIES
+==========================================================*/
+.hidden {
+    display: none !important;
+}
+
+button:focus-visible {
+    outline: 2px solid #0066cc;
+    outline-offset: 2px;
+}
+
+html {
+    scroll-behavior: smooth;
+}

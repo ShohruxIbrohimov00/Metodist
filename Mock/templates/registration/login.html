@@ -1,0 +1,74 @@
+{% extends 'registration_base.html' %}
+{% load static %}
+
+{% block title %}Tizimga kirish{% endblock %}
+
+{% block content %}
+    <div class="flex items-center justify-center min-h-screen p-4 bg-gray-100">
+        <div class="relative flex w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden transform transition duration-500 hover:shadow-3xl">
+            
+            <div class="w-full md:w-1/2 p-8 md:p-12">
+                <h2 class="text-3xl font-extrabold text-indigo-700 mb-2">Xush Kelibsiz!</h2>
+                <p class="text-gray-500 mb-8">Digital SAT Math imtihoniga tayyorgarlikni boshlash uchun tizimga kiring.</p>
+
+                {% if messages %}
+                    <div class="mb-4">
+                        {% for message in messages %}
+                            <div class="p-3 rounded-xl {% if message.tags == 'error' %}bg-red-100 text-red-700{% elif message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-blue-100 text-blue-700{% endif %} font-medium shadow-sm" role="alert">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <form id="loginForm" action="{% url 'login' %}" method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-5">
+                        <label for="username" class="block text-gray-700 font-semibold mb-2">Foydalanuvchi nomi</label>
+                        <input type="text" id="username" name="username" required
+                               class="shadow-md appearance-none border border-gray-300 rounded-xl w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 transition duration-200"
+                               placeholder="Login">
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="password" class="block text-gray-700 font-semibold mb-2">Parol</label>
+                        <input type="password" id="password" name="password" required
+                               class="shadow-md appearance-none border border-gray-300 rounded-xl w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 transition duration-200"
+                               placeholder="********">
+                    </div>
+                    
+                    <div class="flex items-center justify-between mb-8">
+                        <a href="{% url 'mock_password_reset' %}" 
+                            class="inline-block align-baseline font-medium text-sm text-indigo-600 hover:text-indigo-800 transition duration-200">
+                            Parolni unutdingizmi?
+                        </a>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-300 shadow-lg transition duration-300 transform hover:scale-[1.02]">
+                            Kirish
+                    </button>
+                </form>
+
+                <p class="text-center text-gray-500 text-sm mt-8">
+                    Akkauntingiz yo'qmi? 
+                    <a href="{% url 'signup' %}" class="text-indigo-600 hover:underline font-bold transition duration-200">Ro'yxatdan o'tish</a>
+                </p>
+            </div>
+
+            <div class="hidden md:block w-1/2 relative overflow-hidden">
+                <img class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                     src="{% static 'images/login.jpg' %}"
+                     alt="Talaba SAT Math tayyorlayapti"
+                     onerror="this.src='https://images.pexels.com/photos/5428825/pexels-photo-5428825.jpeg?w=800'">
+                
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end">
+                    <div class="p-10 text-white">
+                        <h3 class="text-4xl font-extrabold mb-3">SAT Math 800+</h3>
+                        <p class="text-lg opacity-90">Har kuni minglab o‘quvchilar biz bilan SATga tayyorlanishmoqda!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

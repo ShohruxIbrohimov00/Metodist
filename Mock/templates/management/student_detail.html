@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load static i18n humanize %}
+
+{% block title %}{{ student.get_full_name }} – Batafsil{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6 max-w-7xl">
+    <div class="bg-white rounded-3xl shadow-xl border border-gray-200">
+
+        <!-- Sarlavha -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6 text-white">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-5">
+                    <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl font-bold">
+                        {{ student.get_full_name|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-extrabold">{{ student.get_full_name }}</h2>
+                        <p class="text-indigo-100">@{{ student.username }}</p>
+                    </div>
+                </div>
+                <a href="{% url 'center_students' center.slug %}" 
+                   class="bg-white/20 hover:bg-white/30 px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition">
+                    <i class="fas fa-arrow-left"></i> Orqaga
+                </a>
+            </div>
+        </div>
+
+        <div class="p-8">
+
+            <!-- 4 ta kartochka – RASMDAGI KABI, RANG CHIZIQSIZ! -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+
+                <!-- 1. Topshirilgan imtihon -->
+                <div class="bg-gradient-to-br from-yellow-50 to-amber-100 rounded-2xl p-6 shadow-lg">
+                    <div class="text-6xl text-yellow-600 mb-3">Trophy</div>
+                    <div class="text-4xl font-black text-amber-900">{{ total_exams_done }}</div>
+                    <p class="text-sm font-medium text-gray-700 mt-2">Topshirilgan imtihon</p>
+                </div>
+
+                <!-- 2. Jami to‘langan -->
+                <div class="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-2xl p-6 shadow-lg">
+                    <div class="text-6xl text-emerald-600 mb-3">Wallet</div>
+                    <div class="text-4xl font-black text-emerald-900">{{ total_spent|intcomma }}</div>
+                    <p class="text-sm font-medium text-gray-700 mt-2">Jami to‘langan</p>
+                </div>
+
+                <!-- 3. Kredit -->
+                <div class="bg-gradient-to-br from-purple-50 to-pink-100 rounded-2xl p-6 shadow-lg">
+                    <div class="text-6xl text-purple-600 mb-3">Ticket</div>
+                    <div class="text-4xl font-black text-purple-900">{{ user_balance.exam_credits|default:"0" }}</div>
+                    <p class="text-sm font-medium text-gray-700 mt-2">Kredit</p>
+                </div>
+
+                <!-- 4. Jami xarid -->
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-6 shadow-lg">
+                    <div class="text-6xl text-blue-600 mb-3">Cart</div>
+                    <div class="text-4xl font-black text-blue-900">
+                        {{ subscription_history|length|add:package_history|length|add:course_history|length }}
+                    </div>
+                    <p class="text-sm font-medium text-gray-700 mt-2">Jami xarid</p>
+                </div>
+            </div>
+
+            <!-- Shaxsiy ma'lumotlar -->
+            <div class="bg-gray-50 rounded-2xl p-6 border border-gray-200 mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    Shaxsiy ma'lumotlar
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                    <p><span class="font-semibold">Telefon:</span> {{ student.phone_number|default:"—" }}</p>
+                    <p><span class="font-semibold">Ro‘yxatdan o‘tgan:</span> {{ student.date_joined|date:"d.m.Y" }}</p>
+                    <p><span class="font-semibold">Holati:</span> 
+                        <span class="{% if student.is_banned %}text-red-600{% else %}text-green-600{% endif %} font-bold">
+                            {% if student.is_banned %}Bloklangan{% else %}Faol{% endif %}
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Xaridlar tarixi -->
+            <div class="space-y-8">
+
+                <!-- Kurs xaridlari -->
+                {% if course_history %}
+                <div>
+                    <h3 class="text-xl font-bold text-emerald-700 mb-4">
+                        Kurs xaridlari
+                    </h3>
+                    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <table class="w-full">
+                            <thead class="bg-emerald-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-sm font-bold text-emerald-800">Kurs nomi</th>
+                                    <th class="px-6 py-3 text-left text-sm font-bold text-emerald-800">Narxi</th>
+                                    <th class="px-6 py-3 text-left text-sm font-bold text-emerald-800">Sana</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                {% for p in course_history %}
+                                <tr class="hover:bg-emerald-50">
+                                    <td class="px-6 py-4 font-medium">{{ p.course.title }}</td>
+                                    <td class="px-6 py-4 text-emerald-700 font-bold">{{ p.final_amount|intcomma }} so‘m</td>
+                                    <td class="px-6 py-4 text-gray-600">{{ p.created_at|date:"d.m.Y H:i" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Obuna xaridlari -->
+                {% if subscription_history %}
+                <div>
+                    <h3 class="text-xl font-bold text-indigo-700 mb-4">
+                        Obuna xaridlari
+                    </h3>
+                    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <table class="w-full">
+                            <thead class="bg-indigo-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-sm font-bold text-indigo-800">Reja nomi</th>
+                                    <th class="px-6 py-3 text-left text-sm font-bold text-indigo-800">Narxi</th>
+                                    <th class="px-6 py-3 text-left text-sm font-bold text-indigo-800">Sana</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                {% for p in subscription_history %}
+                                <tr class="hover:bg-indigo-50">
+                                    <td class="px-6 py-4 font-medium">{{ p.subscription_plan.name }}</td>
+                                    <td class="px-6 py-4 text-indigo-700 font-bold">{{ p.final_amount|intcomma }} so‘m</td>
+                                    <td class="px-6 py-4 text-gray-600">{{ p.created_at|date:"d.m.Y H:i" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Imtihon paketlari -->
+                {% if package_history %}
+                <div>
+                    <h3 class="text-xl font-bold text-yellow-700 mb-4">
+                        Imtihon paketlari
+                    </h3>
+                    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <table class="w-full">
+                            <thead class="bg-yellow-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-sm font-bold text-yellow-800">Paket nomi</th>
+                                    <th class="px-6 py-3 text-left text-sm font-bold text-yellow-800">Kredit</th>
+                                    <th class="px-6 py-3 text-left text-sm font-bold text-yellow-800">Narxi</th>
+                                    <th class="px-6 py-3 text-left text-sm font-bold text-yellow-800">Sana</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                {% for p in package_history %}
+                                <tr class="hover:bg-yellow-50">
+                                    <td class="px-6 py-4 font-medium">{{ p.package.name }}</td>
+                                    <td class="px-6 py-4 text-yellow-700 font-bold">+{{ p.package.exam_credits }}</td>
+                                    <td class="px-6 py-4 text-yellow-700 font-bold">{{ p.final_amount|intcomma }} so‘m</td>
+                                    <td class="px-6 py-4 text-gray-600">{{ p.created_at|date:"d.m.Y H:i" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Hech narsa yo‘q bo‘lsa -->
+                {% if not course_history and not subscription_history and not package_history %}
+                <div class="text-center py-16 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300">
+                    <p class="text-xl font-medium text-gray-600">Hozircha hech qanday to‘lov yo‘q</p>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

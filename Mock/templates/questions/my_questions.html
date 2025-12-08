@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block title %}{% trans "Mening Mavzularim" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Folder hover effektlari */
+    .folder-item {
+        transition: all 0.3s;
+    }
+    .folder-item:hover {
+        background-color: #e5e7eb; /* gray-200 */
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    /* Qidiruv input */
+    #topicSearch {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid #d1d5db; /* gray-300 */
+        border-radius: 0.5rem;
+        outline: none;
+        transition: all 0.3s;
+    }
+    #topicSearch:focus {
+        border-color: #4f46e5; /* indigo */
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-white p-6 rounded-lg shadow-md max-w-7xl mx-auto">
+
+    <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
+        <!-- Chap tomondagi sarlavha -->
+        <h2 class="text-3xl font-bold text-gray-800">{% trans "Mening Mavzularim" %}</h2>
+
+        <!-- O'ng tomondagi tugmalar -->
+        <div class="flex space-x-2 mt-2 sm:mt-0">
+            <a href="{% url 'passage_list' slug=center.slug %}" class="btn px-4 py-2 bg-white-200 text-white-800 font-semibold rounded-md hover:bg-green-100 transition">
+                <i class="fas fa-folder-plus mr-2"></i>{% trans "Savol Matni yaratish" %}
+            </a>
+
+            <a href="{% url 'create_topic' slug=center.slug %}" class="btn px-4 py-2 bg-white-200 text-white-800 font-semibold rounded-md hover:bg-green-100 transition">
+                <i class="fas fa-folder-plus mr-2"></i>{% trans "Mavzu yaratish" %}
+            </a>
+        </div>
+    </div>
+
+
+
+    {% if topics or uncategorized_questions_count > 0 %}
+    
+    <!-- Qidiruv input -->
+    <input type="text" id="topicSearch" placeholder="{% trans 'Mavzularni qidirish...' %}" onkeyup="filterTopics()">
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="topicsGrid">
+        {% for topic in topics %}
+        <div class="folder-item bg-gray-100 hover:bg-gray-200 rounded-lg p-6 flex flex-col items-center justify-center text-center transition duration-300">
+            <a href="{% url 'topic_detail' slug=center.slug topic_id=topic.id %}" class="w-full">
+                <i class="fas fa-folder-open text-5xl text-yellow-400 mb-2"></i>
+                <h3 class="text-xl font-semibold text-gray-800 truncate w-full">{{ topic.name }}</h3>
+                <p class="text-sm text-gray-500">{{ topic.question_count }} {% trans "ta savol" %}, {{ topic.subtopic_count }} {% trans "ta ichki mavzu" %}</p>
+            </a>
+            <div class="folder-actions mt-2 flex space-x-2">
+                <a href="{% url 'edit_topic' topic_id=topic.id slug=center.slug %}" class="btn-icon text-yellow-500 hover:text-yellow-700" title="{% trans 'Tahrirlash' %}">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <a href="{% url 'delete_topic' topic_id=topic.id slug=center.slug %}" class="btn-icon text-red-500 hover:text-red-700" title="{% trans 'O‘chirish' %}">
+                    <i class="fas fa-trash-alt"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% if uncategorized_questions_count > 0 %}
+        <a href="{% url 'uncategorized_questions' slug=center.slug %}" class="folder-item bg-gray-100 hover:bg-gray-200 rounded-lg p-6 flex flex-col items-center justify-center text-center transition duration-300">
+            <i class="fas fa-question-circle text-5xl text-gray-400 mb-2"></i>
+            <h3 class="text-xl font-semibold text-gray-800 truncate w-full">{% trans "Mavzulanmagan savollar" %}</h3>
+            <p class="text-sm text-gray-500">{{ uncategorized_questions_count }} {% trans "ta savol" %}</p>
+        </a>
+        {% endif %}
+    </div>
+    
+    {% else %}
+    <p class="text-gray-600">{% trans "Hozircha mavzular yo'q." %}</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterTopics() {
+    let input = document.getElementById("topicSearch").value.toLowerCase();
+    let grid = document.getElementById("topicsGrid");
+    let items = grid.getElementsByClassName("folder-item");
+
+    for (let i = 0; i < items.length; i++) {
+        let title = items[i].querySelector("h3").textContent.toLowerCase();
+        let desc = items[i].querySelector("p") ? items[i].querySelector("p").textContent.toLowerCase() : "";
+        if (title.includes(input) || desc.includes(input)) {
+            items[i].style.display = "flex";
+        } else {
+            items[i].style.display = "none";
+        }
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,178 @@
+{% load static %}
+
+<div class="exam-card group exam-card-wrapper"
+     data-type="{% if result.exam.is_subject_exam %}topic{% else %}mock{% endif %}"
+     data-price="{% if result.exam.is_premium %}premium{% else %}free{% endif %}"
+     data-created-at="{{ result.exam.created_at|date:'Y-m-d' }}">
+
+    <div class="relative bg-white rounded-xl shadow-lg border border-slate-100 
+                 overflow-hidden transition-all duration-300 hover:border-indigo-300
+                 w-[300px] min-h-[480px] flex flex-col group-hover:shadow-xl"> <div class="absolute top-3 right-3 z-10 flex flex-col items-end gap-1">
+            
+            {% if result.exam.is_premium %}
+                <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg ring-2 ring-white/70">
+                    <i class="fas fa-crown text-yellow-300 text-xs"></i>
+                </div>
+            {% endif %}
+
+            <div class="px-2 py-0.5 bg-white/80 backdrop-blur-sm rounded-lg shadow-sm">
+                <div class="flex items-center gap-1 text-xs font-semibold text-slate-500">
+                    <i class="fa-solid fa-repeat"></i>
+                    <span>{{ result.attempt_count }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-4 pt-4 pb-2 flex-shrink-0">
+            <div class="flex items-center justify-between mb-2">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold
+                              {% if not result.exam.is_subject_exam %}bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700
+                              {% else %}bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700{% endif %}">
+                    <i class="fas {% if not result.exam.is_subject_exam %}fa-file-alt{% else %}fa-book{% endif %} text-[10px]"></i>
+                    {% if not result.exam.is_subject_exam %}Mock{% else %}Mavzu{% endif %}
+                </span>
+            </div>
+            <h3 class="text-lg font-extrabold text-slate-800 leading-snug line-clamp-2 group-hover:text-indigo-600 transition-colors">
+                {{ result.exam.title }}
+            </h3>
+        </div>
+
+        <div class="px-4 pb-3 flex-shrink-0">
+            <p class="text-[11px] text-slate-600 leading-snug line-clamp-3 italic">
+                {{ result.exam.description|default:"Yuqori sifatli SAT tayyorgarlik imtihoni."|truncatechars:140 }}
+            </p>
+        </div>
+
+        <div class="px-4 flex-1 flex flex-col justify-center">
+            <div class="space-y-3">
+                
+                <div class="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg p-3 border border-yellow-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fas fa-trophy text-xl text-yellow-500"></i>
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-600">Eng yaxshi</p>
+                                <p class="text-xl font-extrabold 
+                                    {% if result.exam.is_subject_exam %}text-emerald-600{% else %}text-yellow-600{% endif %}">
+                                    {% if result.exam.is_subject_exam %}
+                                        {{ result.best_attempt.final_total_score|default:"–"|floatformat:0 }}%
+                                    {% else %}
+                                        {{ result.best_attempt.final_total_score|default:"–" }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% if result.best_attempt.completed_at %}
+                            <span class="text-[9px] text-slate-500 whitespace-nowrap">
+                                {{ result.best_attempt.completed_at|date:"d M, Y" }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-r from-slate-50 to-gray-100 rounded-lg p-3 border border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fas fa-history text-xl text-slate-500"></i>
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-600">Oxirgi</p>
+                                <p class="text-xl font-extrabold text-slate-800">
+                                    {% if result.exam.is_subject_exam %}
+                                        {{ result.latest_attempt.final_total_score|default:"–"|floatformat:0 }}%
+                                    {% else %}
+                                        {{ result.latest_attempt.final_total_score|default:"–" }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% if result.latest_attempt.completed_at %}
+                            <span class="text-[9px] text-slate-500 whitespace-nowrap">
+                                {{ result.latest_attempt.completed_at|date:"d M, Y" }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div class="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 bg-emerald-100 rounded flex items-center justify-center">
+                                <i class="fas fa-clock text-emerald-600 text-[10px]"></i>
+                            </div>
+                            <span class="text-slate-500">Vaqt</span>
+                        </div>
+                        <span class="font-bold text-slate-800">{{ result.total_duration|default:"–" }} daq</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 bg-rose-100 rounded flex items-center justify-center">
+                                <i class="fas fa-question-circle text-rose-600 text-[10px]"></i>
+                            </div>
+                            <span class="text-slate-500">Savollar</span>
+                        </div>
+                        <span class="font-bold text-emerald-600">{{ result.total_questions|default:"–" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if result.sections %}
+        <div class="px-4 pt-3 border-t border-slate-100">
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Bo‘limlar</p>
+            <div class="flex flex-wrap gap-1">
+                {% for section in result.sections %}
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold
+                                 {% if section.is_math %}bg-indigo-50 text-indigo-700 border border-indigo-200
+                                 {% else %}bg-emerald-50 text-emerald-700 border border-emerald-200{% endif %}">
+                        <i class="fas {% if section.is_math %}fa-calculator{% else %}fa-book-open{% endif %} text-[9px]"></i>
+                        {{ section.type_display }}
+                    </span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="px-4 pb-4 pt-3 border-t border-slate-100 mt-auto flex-shrink-0 space-y-2">
+            <a href="{% url 'exam_attempts' center.slug result.exam.id %}"
+               class="block text-center py-2.5 bg-gradient-to-r from-blue-600 to-cyan-700 
+                      text-white font-bold rounded-lg shadow-md transition-all duration-200 active:scale-95 text-sm flex items-center justify-center gap-2 hover:opacity-90"> 
+                <i class="fas fa-chart-line"></i>
+                Barcha Natijalar
+            </a>
+
+            <div class="grid grid-cols-2 gap-2">
+                {% if result.has_flashcard_exam %}
+                    <a href="{% url 'flashcard_exam_view' center.slug result.exam.flashcard_exam.id %}"
+                       class="text-center py-2.5 bg-gradient-to-r from-sky-500 to-cyan-500 
+                              text-white font-bold rounded-lg shadow-md transition-all duration-200 active:scale-95 text-xs flex items-center justify-center gap-1 hover:opacity-90">
+                        <i class="fas fa-layer-group text-xs"></i>
+                        Lug'at
+                    </a>
+                {% else %}
+                    <button disabled class="text-center py-2.5 bg-slate-300 text-slate-600 
+                                             rounded-lg cursor-not-allowed text-xs flex items-center justify-center gap-1">
+                        <i class="fas fa-layer-group text-xs"></i>
+                        Lug'at
+                    </button>
+                {% endif %}
+
+                {% if result.can_start_exam %}
+                    <button class="start-exam-btn w-full py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 
+                                   text-white font-bold rounded-lg shadow-md transition-all duration-200 active:scale-95 text-sm flex items-center justify-center gap-2 hover:opacity-90"
+                            data-exam-id="{{ result.exam.id }}">
+                        <i class="fas fa-redo text-xs"></i>
+                        <span class="btn-text">Ishlash</span>
+                        <i class="fas fa-spinner fa-spin hidden ml-2"></i>
+                    </button>
+                {% else %}
+                    <a href="{% url 'price' center.slug %}"
+                       class="text-center py-2.5 bg-gradient-to-r from-rose-500 to-pink-600 
+                              text-white font-bold rounded-lg shadow-md transition-all duration-200 active:scale-95 text-xs flex items-center justify-center gap-1 hover:opacity-90">
+                        <i class="fas fa-crown text-xs"></i>
+                        Premium
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

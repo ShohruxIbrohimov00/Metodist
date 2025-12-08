@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static i18n widget_tweaks humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+    /* Umumiy tugmalar */
+    .btn { 
+        display: inline-flex; 
+        align-items: center; 
+        padding: 0.5rem 1rem; 
+        font-weight: 600; 
+        border-radius: 0.375rem; 
+        transition: all 0.3s; 
+    }
+    .btn-primary { background-color: #4f46e5; color: white; } 
+    .btn-primary:hover { background-color: #4338ca; }
+    .btn-danger { background-color: #ef4444; color: white; }
+    .btn-danger:hover { background-color: #dc2626; }
+    .btn-secondary { background-color: #6b7280; color: white; }
+    .btn-secondary:hover { background-color: #4b5563; }
+
+    /* Icon tugmalar */
+    .btn-icon { 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        width: 2.5rem; 
+        height: 2.5rem; 
+        border-radius: 0.375rem; 
+        transition: all 0.2s; 
+    }
+    .btn-icon:hover { background-color: rgba(0, 0, 0, 0.05); }
+
+    /* Modal style */
+    .modal { 
+        display: none; 
+        position: fixed; 
+        z-index: 1000; 
+        left: 0; 
+        top: 0; 
+        width: 100%; 
+        height: 100%; 
+        overflow: auto; 
+        background-color: rgba(0, 0, 0, 0.4); 
+        padding-top: 60px; 
+    }
+    .modal-content { 
+        background-color: #fefefe; 
+        margin: 5% auto; 
+        padding: 20px; 
+        border-radius: 8px; 
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+        width: 90%; 
+        max-width: 500px; 
+    }
+    .close { 
+        color: #aaa; 
+        float: right; 
+        font-size: 28px; 
+        font-weight: bold; 
+        cursor: pointer; 
+    }
+    .close:hover, .close:focus { color: #000; text-decoration: none; }
+
+    /* Super Guruh qatori */
+    .super-group-row {
+        background-color: #f0f4ff; 
+        border-bottom: 2px solid #c7d2fe; 
+    }
+    .super-group-row:hover {
+        background-color: #e0e8ff !important; 
+    }
+
+    /* Jadval hover effekti */
+    #groupsTable tbody tr:not(.super-group-row) {
+        transition: background-color 0.2s, box-shadow 0.2s, transform 0.15s;
+    }
+    #groupsTable tbody tr:not(.super-group-row):hover {
+        background-color: #f9fafb; 
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        transform: translateY(-1px);
+    }
+
+    /* Qidiruv input */
+    #searchInput {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.75rem;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        outline: none;
+        transition: all 0.2s ease-in-out;
+    }
+    #searchInput:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 4px rgba(99,102,241,0.2);
+    }
+
+    /* Natija yo'q xabari */
+    #no-results td {
+        font-style: italic;
+        color: #9ca3af;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8 max-w-7xl">
+    <div class="bg-white shadow-2xl rounded-xl p-6 md:p-8 border border-gray-100">
+
+        {# Sarlavha va Yaratish tugmasi #}
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-4 sm:space-y-0">
+            <h2 class="text-3xl font-extrabold text-gray-900">{% trans "Guruhlarni boshqarish" %}</h2>
+            <a href="{% url 'group_create' slug=center.slug %}" class="btn btn-primary shadow-lg">
+                <i class="fas fa-users-cog mr-2"></i>{% trans "Yangi Guruh Qo'shish" %}
+            </a>
+        </div>
+
+        {% for message in messages %}
+            <div class="p-4 mb-4 text-sm rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'error' %}bg-red-100 text-red-700{% endif %}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {# Qidiruv inputi #}
+        <input type="text" id="searchInput" placeholder="{% trans 'Guruh nomi, o\'qituvchi yoki kurs bo\'yicha qidirish...' %}" />
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200" id="groupsTable">
+                <thead class="bg-indigo-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{% trans "Guruh Nomi" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider hidden sm:table-cell">{% trans "O'qituvchi" %}</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">{% trans "O'quvchilar Soni" %}</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider hidden lg:table-cell">{% trans "Kurslar" %}</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider hidden md:table-cell">{% trans "Status" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">{% trans "Amallar" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+
+                    {# Super Guruh qatori #}
+                    <tr class="super-group-row font-bold"> 
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-base text-indigo-700 flex items-center">
+                                <i class="fas fa-layer-group mr-2"></i>
+                                {% trans "Barcha O'quvchilar" %}
+                                <span class="text-xs font-normal text-gray-500 ml-2">({% trans "Super Guruh" %})</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 hidden sm:table-cell"><span class="text-xs text-gray-500">—</span></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-200 text-indigo-800">{{ center_student_count|default:0 }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center hidden lg:table-cell"><span class="text-sm text-gray-500">—</span></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center hidden md:table-cell">
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{% trans "Aktiv" %}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <a href="{% url 'center_students' slug=center.slug %}" class="btn-icon text-indigo-600 hover:bg-indigo-100" title="{% trans "Barcha O'quvchilarni Ko'rish" %}">
+                                    <i class="fas fa-list-alt text-lg"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    {# Qolgan guruhlar #}
+                    {% if groups %}
+                        {% for group in groups %}
+                        <tr> 
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{{ group.name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 hidden sm:table-cell">{{ group.teacher.full_name|default:"-" }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">{{ group.students.count|default:0 }}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center hidden lg:table-cell">
+                                <a href="{% url 'group_manage_courses' slug=center.slug pk=group.pk %}" class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 hover:bg-purple-200 transition">{{ group.courses.count }}</a>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center hidden md:table-cell">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {% if group.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                    {% if group.is_active %}{% trans "Aktiv" %}{% else %}{% trans "Nofaol" %}{% endif %}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex justify-end space-x-2">
+                                    <a href="{% url 'group_manage_students' slug=center.slug pk=group.pk %}" class="btn-icon text-green-600 hover:bg-green-100" title="{% trans "O'quvchilarni boshqarish" %}"><i class="fas fa-user-graduate"></i></a>
+                                    <a href="{% url 'group_update' slug=center.slug pk=group.pk %}" class="btn-icon text-blue-600 hover:bg-blue-100" title="{% trans "Guruhni tahrirlash" %}"><i class="fas fa-edit"></i></a>
+                                    <button onclick="openDeleteModal('delete-modal-{{ group.pk }}')" class="btn-icon text-red-600 hover:bg-red-100" title="{% trans "Guruhni o'chirish" %}"><i class="fas fa-trash-alt"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if not groups and center_student_count == 0 %}
+             <div class="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300 mt-6">
+                <i class="fas fa-users-slash text-6xl text-gray-400 mb-4"></i>
+                <p class="text-lg text-gray-500 mb-4">{% trans "Hozircha guruhlar va o'quvchilar mavjud emas." %}</p>
+                <a href="{% url 'group_create' slug=center.slug %}" class="btn btn-primary">
+                    <i class="fas fa-plus mr-2"></i>{% trans "Birinchi guruhni yarating" %}
+                </a>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{# O'chirish Modallari #}
+{% for group in groups %}
+<div id="delete-modal-{{ group.pk }}" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('delete-modal-{{ group.pk }}')">&times;</span>
+        <h3 class="text-xl font-bold text-gray-800 mb-4">{% trans "Guruhni o'chirishni tasdiqlash" %}</h3>
+        <p class="text-gray-600 mb-4">{% blocktrans with group_name=group.name %}Haqiqatan ham **{{ group_name }}** guruhini o'chirmoqchimisiz? Bu amalni **qaytarib bo'lmaydi** va guruh bilan bog'liq barcha o'quvchi ma'lumotlari (guruh a'zoligi) yo'qolishi mumkin!{% endblocktrans %}</p>
+        <form method="post" action="{% url 'group_delete' slug=center.slug pk=group.pk %}"> 
+            {% csrf_token %}
+            <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" onclick="closeModal('delete-modal-{{ group.pk }}')" class="btn btn-secondary">{% trans "Bekor qilish" %}</button>
+                <button type="submit" class="btn btn-danger">{% trans "O'chirish" %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Modal funksiyalari
+    function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+    function openDeleteModal(modalId) {
+        document.querySelectorAll('.modal').forEach(modal => { modal.style.display = 'none'; });
+        document.getElementById(modalId).style.display = 'block';
+    }
+    window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.style.display = "none"; }
+
+    // Real-time qidiruv
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase();
+        const tbody = document.querySelector('#groupsTable tbody');
+        if (!tbody) return;
+        const rows = tbody.querySelectorAll('tr');
+        let anyVisible = false;
+
+        rows.forEach(row => {
+            if (row.classList.contains('super-group-row')) { anyVisible = true; return; } // Super Guruhni doim ko'rsat
+            const cells = row.querySelectorAll('td');
+            const text = Array.from(cells).map(td => td.textContent.toLowerCase()).join(' ');
+            if (text.includes(filter)) { row.style.display = ''; anyVisible = true; }
+            else { row.style.display = 'none'; }
+        });
+
+        // "Natija yo'q"
+        let noResultRow = document.getElementById('no-results');
+        if (!anyVisible) {
+            if (!noResultRow) {
+                const tr = document.createElement('tr');
+                tr.id = 'no-results';
+                tr.innerHTML = `<td colspan="6" class="text-center py-4">Kiritilgan so‘z bo‘yicha guruh topilmadi.</td>`;
+                tbody.appendChild(tr);
+            }
+        } else if (noResultRow) { noResultRow.remove(); }
+    });
+</script>
+{% endblock %}

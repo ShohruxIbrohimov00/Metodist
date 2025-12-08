@@ -1,0 +1,342 @@
+{% load static %}
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ attempt.exam.title }} - Exam</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/exam_mode.css' %}">
+    
+    <!-- MATHJAX 3 – 100% ISHLAYDI (2025 yil uchun to‘g‘ri yozilgan) -->
+    <script>
+    window.MathJax = {
+        tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true
+        },
+        chtml: {
+        scale: 1,
+        displayAlign: 'left'
+        },
+        startup: {
+        ready() {
+            MathJax.startup.defaultReady();
+            // Savol yuklanganda formulalarni qayta render qilish uchun
+            window.renderMath = () => {
+            MathJax.typesetPromise().catch(err => console.log('MathJax xato:', err));
+            };
+        }
+        }
+    };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+
+
+    <!-- DESMOS 2025 – CORB/CORS bloklamaydi, KEYPAD BOR, 100% ISHLAYDI -->
+    <script>
+    // Desmosni iframe orqali yuklaymiz – bu yagona ishlaydigan yo‘l 2025 yilda
+    function openDesmosCalculator() {
+    // Agar allaqachon ochiq bo‘lsa – faqat focus qilamiz
+    if (window.desmosIframe && !window.desmosIframe.closed) {
+        window.desmosIframe.focus();
+        return;
+    }
+
+    // Yangi oynada ochamiz (popup emas, oddiy tab)
+    const width = screen.width > 600 ? 500 : screen.width - 100;
+    const height = screen.height - 150;
+    const left = screen.width - width - 50;
+    const top = 50;
+
+    window.desmosIframe = window.open(
+        'https://www.desmos.com/calculator',
+        'desmos_calculator',
+        `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no`
+    );
+
+    // Agar popup bloklangan bo‘lsa – oddiy tabda ochamiz
+    if (!window.desmosIframe || window.desmosIframe.closed) {
+        window.open('https://www.desmos.com/calculator', '_blank');
+    }
+    }
+
+    // Tugma bosilganda
+    document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('calculator-btn')?.addEventListener('click', () => {
+        openDesmosCalculator();
+    });
+    });
+    </script>
+
+    <!-- SAT Formulas -->
+    <script src="{% static 'js/sat_formulas.js' %}"></script>
+</head>
+<body>
+    <div class="sat-wrapper">
+        <!-- HEADER -->
+        <header class="sat-header">
+            <div class="container header-content">
+                <div class="header-left">
+                    <span class="question-number-header" id="question-number-header">
+                        {% if is_subject_exam %}
+                            {{ attempt.exam.title }}
+                        {% else %}
+                            {{ section_attempt.section.get_section_type_display }} (Module {{ section_attempt.section.module_number }})
+                        {% endif %}
+                    </span>
+                    
+                    {% if not is_subject_exam %}
+                        <div class="section-tabs">
+                            {% for sa in section_attempts %}
+                                <span class="section-tab {% if sa.id == section_attempt_id %}active{% endif %}"
+                                      data-section-id="{{ sa.id }}">
+                                    {{ sa.section.get_section_type_display }} M{{ sa.section.module_number }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <button class="directions-btn" id="directions-btn">
+                        Directions <i class="fa-solid fa-caret-down"></i>
+                    </button>
+                </div>
+                
+                <div class="timer-container">
+                    <span id="timer">00:00</span>
+                    <button id="hide-timer-btn">Hide</button>
+                </div>
+                
+                <div class="header-right">
+                    <button class="header-btn" id="calculator-btn">
+                        <i class="fa-solid fa-calculator"></i> <span>Calculator</span>
+                    </button>
+                    <button class="header-btn" id="reference-btn">
+                        <i class="fa-solid fa-book-open"></i> <span>Reference</span>
+                    </button>
+                    <button class="header-btn" id="exit-btn">
+                        <i class="fa-solid fa-ellipsis-vertical"></i> <span>More</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <!-- MAIN CONTENT -->
+        <div class="sat-main-content">
+            <div class="question-container">
+                <div class="question-header">
+                    <div class="question-number-progress">
+                        <span id="question-number">1</span>
+                    </div>
+                    <button class="mark-btn" id="mark-review-btn">
+                        <i class="far fa-bookmark"></i> Mark for Review
+                    </button>
+                </div>
+                
+                <div class="question-content">
+                    <div id="question-text">Question text loading...</div>
+                    
+                    <div id="question-image-container" style="display: none;">
+                        <img id="question-image" src="" alt="Question image">
+                    </div>
+                    
+                    <div id="answer-options-container"></div>
+                    <input type="hidden" id="question_format" value="">
+                </div>
+            </div>
+        </div>
+        
+        <!-- FOOTER -->
+        <footer class="sat-footer">
+            <div class="container footer-content">
+                <div class="footer-left">
+                    {{ request.user.get_full_name|default:request.user.username }}
+                </div>
+                
+                <div class="footer-center">
+                    <button class="question-info" id="nav-btn">
+                        <span id="nav-btn-text">Question 1 of 1</span>
+                        <i class="fa-solid fa-chevron-up"></i>
+                    </button>
+                </div>
+                
+                <div class="footer-right">
+                    <button id="prev-btn" class="nav-btn" disabled>
+                        <i class="fa-solid fa-chevron-left"></i> <span>Back</span>
+                    </button>
+                    <button id="next-btn" class="nav-btn">
+                        <span>Next</span> <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- NAVIGATION MODAL - AYNAN RASMLARCHA -->
+    <div id="nav-modal" class="nav-modal hidden">
+        <div class="modal-header-custom">
+            {{ section_attempt.section.get_section_type_display }}, Module {{ section_attempt.section.module_number }}: 
+            {% if section_attempt.section.section_type == 'reading' %}Reading and Writing{% else %}Math{% endif %}
+            <button onclick="closeModal('nav-modal')" style="float: right; background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        
+        <div style="padding: 16px 24px; display: flex; justify-content: center; gap: 24px; border-bottom: 1px solid #e0e0e0;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 16px; height: 16px; border-radius: 50%; background-color: #0066cc;"></div>
+                <span style="font-size: 0.9rem;">Current</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 16px; height: 16px; border: 2px solid #ccc; border-radius: 50%; background-color: #fff;"></div>
+                <span style="font-size: 0.9rem;">Unanswered</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 16px; height: 16px; border-radius: 50%; background-color: #ec4899;"></div>
+                <span style="font-size: 0.9rem;">For Review</span>
+            </div>
+        </div>
+        
+        <div id="question-nav-grid"></div>
+        
+        <div class="modal-footer-custom">
+        </div>
+    </div>
+    
+    
+    <!-- CALCULATOR MODAL – IFRAME BILAN (2025 yil uchun yagona real ishlaydigan usul) -->
+    <div id="calculator-modal" class="modal hidden">
+        <div class="modal-header">
+            <h2>Desmos Kalkulyator</h2>
+            <button class="close-btn" onclick="closeModal('calculator-modal')">&times;</button>
+        </div>
+        <div class="modal-content" style="padding:0; height:calc(100vh - 100px); min-height:600px; background:#f8f9fa;">
+            <!-- DESMOS TO‘LIQ, KEYPAD BILAN, GRAFIK BILAN -->
+            <iframe 
+                src="https://www.desmos.com/calculator?lang=en" 
+                style="width:100%; height:100%; border:none; border-radius:0 0 8px 8px;"
+                title="Desmos Graphing Calculator"
+                allowfullscreen
+                allow="fullscreen">
+            </iframe>
+        </div>
+    </div>
+        
+    <!-- REFERENCE MODAL -->
+    <div id="reference-modal" class="modal hidden">
+        <div class="modal-header">
+            <h2>Reference Sheet</h2>
+            <button class="close-btn" onclick="closeModal('reference-modal')">&times;</button>
+        </div>
+        <div class="modal-content">
+            <div class="formula-panel" id="formula-panel">
+                Loading formulas...
+            </div>
+        </div>
+    </div>
+    
+    <!-- DIRECTIONS MODAL -->
+    <div id="directions-modal" class="center-modal hidden">
+        <div class="modal-content-wrapper">
+            <div class="modal-header">
+                <h2>Directions</h2>
+                <button class="close-btn" onclick="closeModal('directions-modal')">&times;</button>
+            </div>
+            <div class="modal-content">
+                {% if section_attempt.section.directions %}
+                    {{ section_attempt.section.directions|safe }}
+                {% else %}
+                    <p style="color: #666;">No directions available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- EXIT CONFIRMATION MODAL -->
+    <div id="confirm-exit-modal" class="center-modal hidden">
+        <div class="modal-content-wrapper">
+            <div class="modal-header">
+                <h2 style="color: #dc2626;">Exit Exam</h2>
+                <button class="close-btn" onclick="closeModal('confirm-exit-modal')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <p style="font-size: 1.1rem; margin-bottom: 16px;">
+                    Are you sure you want to exit <strong>{{ attempt.exam.title }}</strong>?
+                </p>
+                <p style="color: #dc2626; font-weight: 600; margin-bottom: 24px;">
+                    Warning! You cannot return after exiting!
+                </p>
+                <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                    <button id="final-finish-btn" class="nav-btn" style="background-color: #dc2626; color: white;">
+                        Yes, Exit
+                    </button>
+                    <button class="nav-btn" style="background-color: #6b7280; color: white;" onclick="closeModal('confirm-exit-modal')">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ERROR MODAL -->
+    <div id="error-modal" class="center-modal hidden">
+        <div class="modal-content-wrapper">
+            <div class="modal-header">
+                <h2 style="color: #dc2626;">Error</h2>
+                <button class="close-btn" onclick="closeModal('error-modal')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <p id="error-message" style="font-size: 1.05rem;">An error occurred.</p>
+                <div style="margin-top: 20px; text-align: right;">
+                    <button class="nav-btn" style="background-color: #0066cc; color: white;" onclick="closeModal('error-modal')">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- GLOBAL SCRIPTS -->
+    <script>
+        window.EXAM_AJAX_URL = "{% url 'exam_ajax' %}";
+        window.CSRF_TOKEN = "{{ csrf_token }}";
+        window.IS_SUBJECT_EXAM = {{ is_subject_exam|yesno:"true,false" }};
+        window.ATTEMPT_ID = "{{ attempt_id }}";
+        window.currentSectionId = "{{ section_attempt_id }}";
+        window.timeRemaining = {{ time_remaining_seconds|default:0 }};
+        window.attemptExamTitle = "{{ attempt.exam.title|escapejs }}";
+        
+        window.openModal = function(id) {
+            document.querySelectorAll('.modal, .center-modal, .nav-modal').forEach(m => {
+                m.classList.add('hidden');
+                m.classList.remove('open');
+            });
+            
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('hidden');
+                setTimeout(() => modal.classList.add('open'), 10);
+                
+                if (id === 'reference-modal') {
+                    setTimeout(() => window.loadReferenceFormulas?.(), 100);
+                }
+            }
+        };
+        
+        window.closeModal = function(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('open');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }
+        };
+        
+        window.showError = function(msg) {
+            document.getElementById('error-message').textContent = msg;
+            openModal('error-modal');
+        };
+    </script>
+    
+    <script src="{% static 'js/exam_mode.js' %}"></script>
+</body>
+</html>

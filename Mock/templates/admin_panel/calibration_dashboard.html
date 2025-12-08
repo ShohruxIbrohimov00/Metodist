@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Kalibratsiya — {{ center.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto p-6">
+
+    <h1 class="text-4xl font-bold text-gray-800 mb-2">Savollar kalibratsiyasi</h1>
+    <p class="text-gray-600 mb-8">Professional IRT kalibratsiyasi — faqat R orqali (offline)</p>
+
+    <!-- Statistikalar -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+        <div class="bg-white p-6 rounded-xl shadow">
+            <div class="text-3xl font-bold text-blue-600">{{ total_questions }}</div>
+            <div class="text-gray-600">Jami savollar</div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow">
+            <div class="text-3xl font-bold text-green-600">{{ calibrated_count }}</div>
+            <div class="text-gray-600">Kalibrlangan</div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow">
+            <div class="text-3xl font-bold text-purple-600">{{ total_responses|intcomma }}</div>
+            <div class="text-gray-600">Unikal javoblar</div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow">
+            <div class="text-xl font-bold text-amber-600">{{ last_calibration_date }}</div>
+            <div class="text-gray-600">Oxirgi kalibratsiya</div>
+        </div>
+    </div>
+
+    <!-- EXPORT + IMPORT -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        <!-- EXPORT -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-8 rounded-2xl shadow-xl">
+            <h3 class="text-2xl font-bold mb-4">1. Ma’lumotlarni R ga yuborish</h3>
+            <p class="mb-6 opacity-90">Barcha javoblar toza CSV formatida chiqariladi</p>
+            <a href="{% url 'export_for_r_calibration' center.slug %}" 
+               class="inline-block bg-white text-indigo-700 font-bold py-4 px-10 rounded-xl hover:scale-105 transition shadow-lg">
+               CSV YUKLAB OLISH (R uchun)
+            </a>
+        </div>
+
+        <!-- IMPORT -->
+        <div class="bg-gradient-to-r from-green-600 to-emerald-700 text-white p-8 rounded-2xl shadow-xl p-8">
+            <h3 class="text-2xl  font-bold mb-4">2. R dan natijani yuklash</h3>
+            <p class="mb-6 opacity-90">R da hisoblangan a, b, g qiymatlarni yuklang</p>
+            
+            <form method="post" enctype="multipart/form-data" action="{% url 'import_r_calibration_results' center.slug %}">
+                {% csrf_token %}
+                <input type="file" name="csv_file" accept=".csv" required 
+                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-white file:text-green-700 hover:file:bg-gray-100 mb-4">
+                <button type="submit" class="bg-white text-emerald-700 font-bold py-4 px-10 rounded-xl hover:scale-105 transition shadow-lg">
+                    NATIJANI YUKLASH
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Jadval -->
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <table class="min-w-full">
+            <thead class="bg-gray-50 border-b-2 border-gray-200">
+                <tr>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase">ID</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase">Savol (qisqa)</th>
+                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase">Javoblar</th>
+                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase">To‘g‘ri %</th>
+                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase">Qiyinlik (b)</th>
+                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase">Oxirgi yangilanish</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for s in question_stats %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 text-sm font-medium">#{{ s.question.id }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-700 max-w-md truncate">{{ s.question.text|striptags|truncatewords:12 }}</td>
+                    <td class="px-6 py-4 text-center font-semibold">{{ s.unique_responses }}</td>
+                    <td class="px-6 py-4 text-center font-bold 
+                        {% if s.correct_rate > 75 %}text-green-600
+                        {% elif s.correct_rate < 35 %}text-red-600
+                        {% else %}text-amber-600{% endif %}">
+                        {{ s.correct_rate }}%
+                    </td>
+                    <td class="px-6 py-4 text-center font-mono text-lg font-bold">
+                        {% if s.current_difficulty is not None %}
+                            <span class="{% if s.current_difficulty > 2 %}text-red-600
+                                        {% elif s.current_difficulty < -2 %}text-green-600
+                                        {% else %}text-gray-700{% endif %}">
+                                {{ s.current_difficulty|floatformat:2 }}
+                            </span>
+                        {% else %}
+                            <span class="text-gray-400">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center text-sm text-gray-500">
+                        {% if s.last_calibrated %}
+                            {{ s.last_calibrated|date:"d.m.Y H:i" }}
+                        {% else %}
+                            <span class="text-red-500">Yo‘q</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-12 text-gray-500">Hozircha ma’lumot yo‘q</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-12 text-center text-gray-500 text-sm">
+        <p>© 2025 — Professional IRT kalibratsiyasi. Serverda R ishlatilmaydi. Pul tejaldi.</p>
+    </div>
+</div>
+{% endblock %}

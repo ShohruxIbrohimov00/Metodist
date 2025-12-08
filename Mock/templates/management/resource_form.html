@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static i18n widget_tweaks %}
+
+{% block title %}Resurs Qo'shish{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8 max-w-2xl">
+    <div class="flex items-center mb-6 space-x-4">
+        {# Darslar ro'yxatiga qaytish havolasi #}
+        <a href="{% url 'lesson_list' module_id=lesson.module.id %}" class="text-gray-500 hover:text-indigo-600 transition">
+            <i class="fas fa-arrow-left text-xl"></i>
+        </a>
+        <h1 class="text-3xl font-extrabold text-gray-900">
+            Resurs (Link) Qo'shish
+        </h1>
+    </div>
+
+    <div class="bg-white p-6 md:p-10 rounded-xl shadow-xl border border-gray-100">
+        <p class="text-lg font-medium text-gray-700 mb-6">Dars: <span class="text-indigo-600 font-semibold">{{ lesson.title }}</span></p>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            <div class="p-4 mb-6 bg-blue-50 border-l-4 border-blue-400 text-blue-800 rounded-md">
+                <p class="font-medium">Ma'lumot:</p>
+                <p class="text-sm">Bu darsga video, PDF, Telegram linki, mashq yoki boshqa resurs qo‘shishingiz mumkin.</p>
+            </div>
+
+            <!-- Faqat 3 ta maydon qoladi -->
+            {{ form.resource_type }}
+            {{ form.title }}
+            {{ form.link }}
+
+            <div class="flex justify-end pt-6">
+                <button type="submit" class="px-8 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">
+                    Resursni qo‘shish
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}

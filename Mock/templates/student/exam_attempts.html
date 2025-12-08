@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ exam.title }} – Urinishlar{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 py-8 px-4">
+    <div class="max-w-7xl mx-auto">
+
+        <!-- SARLAVHA -->
+        <div class="text-center mb-10 md:mb-14">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-800 leading-tight">
+                <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    "{{ exam.title }}"
+                </span>
+            </h1>
+            <p class="mt-3 text-base sm:text-lg text-slate-600 max-w-3xl mx-auto">
+                Ushbu imtihon bo‘yicha barcha urinishlaringiz va tahlillari.
+            </p>
+        </div>
+
+        <!-- ENG YAXSHI VA OXIRGI NATIJA (RESPONSIVE GRID) -->
+        {% if best_attempt or latest_attempt %}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10 mb-12 md:mb-16">
+            {% if best_attempt %}
+            <div class="bg-white/90 backdrop-blur-lg rounded-2xl md:rounded-3xl p-6 md:p-10 shadow-xl border border-slate-100">
+                <div class="flex flex-col sm:flex-row items-center gap-5 md:gap-8">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-full flex items-center justify-center shadow-2xl flex-shrink-0">
+                        <i class="fas fa-trophy text-3xl sm:text-4xl text-white"></i>
+                    </div>
+                    <div class="flex-1 text-center sm:text-left">
+                        <h3 class="text-lg sm:text-xl font-bold text-slate-800">Eng Yuqori Natija</h3>
+                        {% if not exam.is_subject_exam %}
+                            <p class="text-4xl sm:text-5xl font-extrabold text-slate-900 mt-2">{{ best_attempt.final_total_score }}</p>
+                            <p class="text-xs sm:text-sm text-slate-500 mt-1">{{ best_attempt.completed_at|date:"d M, Y" }}</p>
+                        {% else %}
+                            <p class="text-4xl sm:text-5xl font-extrabold text-emerald-600 mt-2">{{ best_attempt.correct_percentage|floatformat:1 }}%</p>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'view_result_detail' center.slug best_attempt.id %}"
+                       class="mt-4 sm:mt-0 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 text-sm sm:text-base">
+                        Tahlil
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if latest_attempt and latest_attempt.id != best_attempt.id %}
+            <div class="bg-white/90 backdrop-blur-lg rounded-2xl md:rounded-3xl p-6 md:p-10 shadow-xl border border-slate-100">
+                <div class="flex flex-col sm:flex-row items-center gap-5 md:gap-8">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-slate-500 to-slate-700 rounded-full flex items-center justify-center shadow-2xl flex-shrink-0">
+                        <i class="fas fa-history text-3xl sm:text-4xl text-white"></i>
+                    </div>
+                    <div class="flex-1 text-center sm:text-left">
+                        <h3 class="text-lg sm:text-xl font-bold text-slate-800">Oxirgi Natija</h3>
+                        {% if not exam.is_subject_exam %}
+                            <p class="text-4xl sm:text-5xl font-extrabold textslate-900 mt-2">{{ latest_attempt.final_total_score }}</p>
+                            <p class="text-xs sm:text-sm text-slate-500 mt-1">{{ latest_attempt.completed_at|date:"d M, Y" }}</p>
+                        {% else %}
+                            <p class="text-4xl sm:text-5xl font-extrabold text-emerald-600 mt-2">{{ latest_attempt.correct_percentage|floatformat:1 }}%</p>
+                            <p class="text-xs sm:text-sm text-slate-500">{{ latest_attempt.correct_answers }} / {{ total_questions }}</p>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'view_result_detail' center.slug latest_attempt.id %}"
+                       class="mt-4 sm:mt-0 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 text-sm sm:text-base">
+                        Tahlil
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- URINISHLAR TIMELINE – MOBILDA VERTICAL, KATTA EKRANDA ZIGZAG -->
+        {% if attempts %}
+        <div class="relative">
+            <!-- Vertikal chiziq (faqat katta ekran) -->
+            <div class="hidden lg:block absolute left-1/2 transform -translate-x-1/2 w-1 bg-slate-200 h-full"></div>
+
+            <div class="space-y-10 lg:space-y-16">
+                {% for attempt in attempts %}
+                <div class="relative">
+                    <!-- Mobil uchun markaziy ikonka -->
+                    <div class="lg:hidden flex justify-center mb-6">
+                        <div class="w-14 h-14 rounded-full flex items-center justify-center text-white shadow-2xl z-10
+                                    {% if attempt.id == best_attempt.id %}bg-gradient-to-br from-yellow-400 to-amber-600{% else %}bg-gradient-to-br from-indigo-500 to-purple-600{% endif %}">
+                            {% if attempt.id == best_attempt.id %}
+                                <i class="fas fa-trophy text-2xl"></i>
+                            {% else %}
+                                <i class="fas fa-flag-checkered text-xl"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Kartochka – mobil: to‘liq kenglik, katta ekran: zigzag -->
+                    <div class="bg-white rounded-2xl md:rounded-3xl shadow-xl border-2 p-6 md:p-8
+                                {% if attempt.id == best_attempt.id %}border-yellow-300 shadow-yellow-100/50{% else %}border-slate-100{% endif %}
+                                {% if forloop.counter|divisibleby:2 %}lg:ml-auto lg:w-11/12 xl:w-10/12 lg:pl-16{% else %}lg:mr-auto lg:w-11/12 xl:w-10/12 lg:pr-16{% endif %}">
+                        
+                        <!-- Katta ekranda ikonka chap/o‘ngda -->
+                        <div class="hidden lg:flex absolute top-8 -left-7 xl:-left-9 w-14 h-14 rounded-full items-center justify-center text-white shadow-2xl z-10
+                                    {% if attempt.id == best_attempt.id %}bg-gradient-to-br from-yellow-400 to-amber-600{% else %}bg-gradient-to-br from-indigo-500 to-purple-600{% endif %}">
+                            {% if attempt.id == best_attempt.id %}
+                                <i class="fas fa-trophy text-2xl"></i>
+                            {% else %}
+                                <i class="fas fa-flag-checkered text-xl"></i>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+                            <div>
+                                <p class="text-sm font-bold text-slate-500">{{ attempt.completed_at|date:"d M, Y H:i" }}</p>
+                                <h3 class="text-xl sm:text-2xl font-extrabold text-slate-800 mt-1">Urinish #{{ forloop.revcounter }}</h3>
+                            </div>
+                            {% if attempt.id == best_attempt.id %}
+                            <span class="px-3 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-r from-yellow-100 to-amber-100 text-amber-800 font-bold rounded-full text-xs sm:text-sm border border-amber-300">
+                                Eng Yuqori Natija
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <!-- NATIJA KO‘RSATISH -->
+                        {% if not exam.is_subject_exam %}
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center text-center md:text-left">
+                            <div class="order-1 md:order-none">
+                                <p class="text-4xl sm:text-5xl font-extrabold text-slate-900">{{ attempt.final_total_score|default:"–" }}</p>
+                                <p class="text-sm font-bold text-slate-500 mt-2">JAMI BALL</p>
+                            </div>
+                            <div class="space-y-5 order-3 md:order-none col-span-2">
+                                {% if attempt.final_ebrw_score != None %}
+                                <div>
+                                    <div class="flex justify-between text-sm font-bold mb-2">
+                                        <span>EBRW</span>
+                                        <span class="text-indigo-600">{{ attempt.final_ebrw_score }}/800</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 rounded-full h-3">
+                                        <div class="bg-gradient-to-r from-sky-500 to-indigo-600 h-3 rounded-full transition-all"
+                                             style="width: {% widthratio attempt.final_ebrw_score|default:0 800 100 %}%"></div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <div class="flex justify-between text-sm font-bold mb-2">
+                                        <span>Math</span>
+                                        <span class="text-emerald-600">{{ attempt.final_math_score|default:"–" }}/800</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 rounded-full h-3">
+                                        <div class="bg-gradient-to-r from-emerald-500 to-teal-600 h-3 rounded-full transition-all"
+                                             style="width: {% widthratio attempt.final_math_score|default:0 800 100 %}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <!-- MAVZU TESTI -->
+                        <div class="text-center py-6">
+                            <div class="inline-flex items-center justify-center w-36 h-36 sm:w-40 sm:h-40 rounded-full
+                                        {% if attempt.correct_percentage >= exam.passing_percentage %}bg-gradient-to-br from-emerald-100 to-teal-100 border-8 border-emerald-300
+                                        {% else %}bg-gradient-to-br from-rose-100 to-pink-100 border-8 border-rose-300{% endif %}">
+                                <p class="text-5xl sm:text-6xl font-extrabold
+                                       {% if attempt.correct_percentage >= exam.passing_percentage %}text-emerald-600{% else %}text-rose-600{% endif %}">
+                                    {{ attempt.correct_percentage|floatformat:0 }}%
+                                </p>
+                            </div>
+                            <div class="mt-6 grid grid-cols-3 gap-4 text-center">
+                                <div>
+                                    <p class="text-2xl sm:text-3xl font-bold text-emerald-600">{{ attempt.correct_answers|default:0 }}</p>
+                                    <p class="text-xs sm:text-sm text-slate-500">To‘g‘ri</p>
+                                </div>
+                                <div>
+                                    <p class="text-2xl sm:text-3xl font-bold text-rose-600">{{ attempt.incorrect_answers|default:0 }}</p>
+                                    <p class="text-xs sm:text-sm text-slate-500">Xato</p>
+                                </div>
+                                <div>
+                                    <p class="text-2xl sm:text-3xl font-bold text-slate-600">{{ attempt.omitted_answers|default:0 }}</p>
+                                    <p class="text-xs sm:text-sm text-slate-500">O‘tkazib</p>
+                                </div>
+                            </div>
+                            <p class="mt-4 text-sm text-slate-600">
+                                Jami: <strong>{{ total_questions }}</strong> savol
+                                {% if attempt.correct_percentage >= exam.passing_percentage %}
+                                    <span class="text-emerald-600 font-bold">→ O‘TGAN!</span>
+                                {% else %}
+                                    <span class="text-rose-600 font-bold">→ O‘TMADI ({{ exam.passing_percentage }}% kerak)</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% endif %}
+
+                        <div class="mt-8 text-center">
+                            <a href="{% url 'view_result_detail' center.slug attempt.id %}"
+                               class="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 active:scale-95 text-sm sm:text-base">
+                                Batafsil Tahlil
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% else %}
+        <!-- HECH QANDAY URINISH YO‘Q -->
+        <div class="text-center py-16 md:py-24">
+            <div class="bg-white bg-opacity-80 backdrop-blur-lg rounded-3xl p-10 md:p-16 max-w-2xl mx-auto shadow-2xl border border-slate-100">
+                <i class="fas fa-clipboard-list text-7xl sm:text-9xl text-slate-300 mb-6"></i>
+                <h3 class="text-3xl sm:text-4xl font-extrabold text-slate-700 mb-4">Hali Urinish Yo‘q</h3>
+                <p class="text-lg sm:text-xl text-slate-500 mb-10">Bu imtihonni hali boshlamagansiz. Tayyor bo‘lsangiz boshlang!</p>
+                <a href="{% url 'start_exam' exam.id %}"
+                   class="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-xl rounded-full shadow-2xl hover:shadow-3xl transition-all active:scale-95">
+                    <i class="fas fa-play text-2xl"></i>
+                    Imtihonni Boshlash
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ORQAGA QAYTISH -->
+        <div class="text-center mt-12 md:mt-20">
+            <a href="{% url 'completed_exams' center.slug %}"
+               class="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 active:scale-95 text-sm sm:text-base">
+                <i class="fas fa-arrow-left"></i>
+                Barcha Natijalarga Qaytish
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ center.name }} | Boshqaruv Paneli{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+    /* Umumiy stillar */
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+    .card {
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+    }
+    .card:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+    /* Taglar jadvali stillari */
+    .tag-row:nth-child(odd) {
+        background-color: #f8f9fa;
+    }
+    .sticky-cell-main {
+        position: sticky;
+        left: 0;
+        z-index: 10;
+        background-color: inherit;
+    }
+    .bg-purple-100.tag-row {
+        border-bottom: 2px solid #a78bfa;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen p-4 sm:p-6 lg:p-8">
+    <div class="max-w-7xl mx-auto">
+
+        <header class="mb-8 p-6 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl shadow-lg">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                <h1 class="text-3xl font-bold">
+                    {{ center.name }} — Boshqaruv Paneli 🚀
+                </h1>
+            </div>
+            <p class="text-indigo-100 mt-2">Markaz statistikasi va asosiy faoliyatlar</p>
+        </header>
+
+        {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    <div class="p-4 rounded-lg flex items-center mb-2
+                        {% if message.tags == 'success' %}bg-green-100 text-green-800 border border-green-300
+                        {% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800 border border-yellow-300
+                        {% else %}bg-red-100 text-red-800 border border-red-300{% endif %}">
+                        <i data-lucide="info" class="w-5 h-5 mr-3"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
+            
+            <div class="card bg-white p-4 rounded-xl border border-gray-200">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-gray-500">Jami Talabalar</span>
+                    <i data-lucide="users" class="w-6 h-6 text-indigo-500"></i>
+                </div>
+                <p class="text-3xl font-bold text-gray-900 mt-2">{{ stats.total_students }}</p>
+                <p class="text-xs text-gray-500 mt-1">
+                    Oxirgi 30 kunda: 
+                    <span class="font-semibold text-orange-500">{{ stats.new_students_last_30_days }}</span>
+                </p>
+            </div>
+            
+            <div class="card bg-white p-4 rounded-xl border border-gray-200">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-gray-500">Jami Faol Imtihonlar</span>
+                    <i data-lucide="file-text" class="w-6 h-6 text-blue-500"></i>
+                </div>
+                <p class="text-3xl font-bold text-gray-900 mt-2">{{ stats.total_exams }}</p>
+                <p class="text-xs text-gray-500 mt-1">Markazda yaratilgan testlar</p>
+            </div>
+            
+            <div class="card bg-white p-4 rounded-xl border border-gray-200 xl:col-span-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-gray-500">Jami Urinishlar Soni</span>
+                    <i data-lucide="refresh-cw" class="w-6 h-6 text-green-500"></i>
+                </div>
+                <p class="text-3xl font-bold text-gray-900 mt-2">{{ stats.total_attempts_count }}</p>
+                <p class="text-xs text-gray-500 mt-1">
+                    Oxirgi 7 kunda: 
+                    <span class="font-semibold text-green-600">{{ stats.recent_attempts_count }}</span> ta
+                </p>
+            </div>
+            
+            <div class="card bg-white p-4 rounded-xl border border-gray-200">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-gray-500">Jami Savollar</span>
+                    <i data-lucide="help-circle" class="w-6 h-6 text-teal-500"></i>
+                </div>
+                <p class="text-3xl font-bold text-gray-900 mt-2">{{ stats.total_questions }}</p>
+                <p class="text-xs text-gray-500 mt-1">Nashr qilingan (Published)</p>
+            </div>
+            
+            <div class="card bg-white p-4 rounded-xl border border-gray-200">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-gray-500">Jami Flashcardlar</span>
+                    <i data-lucide="zap" class="w-6 h-6 text-yellow-500"></i>
+                </div>
+                <p class="text-3xl font-bold text-gray-900 mt-2">{{ stats.total_flashcards }}</p>
+                <p class="text-xs text-gray-500 mt-1">Jami mavjud lug'atlar</p>
+            </div>
+            
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+            <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5 mr-2 text-red-500"></i>
+                    Imtihon Natijalari Tahlili
+                </h2>
+                
+                <div class="space-y-4">
+                    <div class="p-3 bg-blue-50 rounded-lg flex justify-between items-center border border-blue-200">
+                        <div>
+                            <p class="text-sm text-gray-600">O'rtacha Umumiy Ball</p>
+                            <p class="text-2xl font-bold text-blue-900">{{ stats.avg_total_score }}</p>
+                        </div>
+                        <i data-lucide="activity" class="w-8 h-8 text-blue-400"></i>
+                    </div>
+                    
+                    <div class="p-3 bg-red-50 rounded-lg border border-red-200">
+                        <p class="text-sm text-gray-600">Eng ommabop Imtihon</p>
+                        <p class="text-lg font-semibold text-red-800 mt-1">
+                            {% if stats.top_exam %}
+                                <a href="{% url 'exam_detail' center.slug stats.top_exam.id %}" class="hover:underline">
+                                    {{ stats.top_exam.title }}
+                                </a>
+                                ({{ stats.top_exam.attempt_count }} urinish)
+                            {% else %}
+                                Ma'lumot mavjud emas
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+                        <p class="text-sm text-gray-600">Eng ommabop Kurs</p>
+                        <p class="text-lg font-semibold text-green-800 mt-1">
+                            {% if stats.most_popular_course %}
+                                {{ stats.most_popular_course.title }} ({{ stats.most_popular_course.student_count }} talaba)
+                            {% else %}
+                                Kurslar mavjud emas
+                            {% endif %}
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <i data-lucide="graduation-cap" class="w-5 h-5 mr-2 text-indigo-500"></i>
+                    Kurslar Ro'yxati (Top 5)
+                </h2>
+                <div class="overflow-x-auto max-h-[400px]">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Kurs</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Guruhlar</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Talabalar</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for course in courses %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-2 text-sm font-medium text-gray-900">{{ course.title }}</td>
+                                    <td class="px-4 py-2 text-sm text-gray-600">
+                                        {{ course.groups_in_course.count }} ta
+                                    </td>
+                                    <td class="px-4 py-2 text-sm text-right font-semibold text-indigo-600">
+                                        {{ course.student_count }}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3" class="px-4 py-6 text-center text-gray-500">
+                                        Kurslar mavjud emas
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <i data-lucide="tag" class="w-5 h-5 mr-2 text-purple-500"></i>
+                Taglar Bo'yicha Resurslar (Savollar / Flashcardlar)
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-purple-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-purple-700 uppercase sticky-cell-main bg-purple-50 z-10">TAG NOMI</th>
+                            <th class="px-4 py-2 text-right text-xs font-medium text-purple-700 uppercase">SAVOLLAR ({{ stats.total_questions }})</th>
+                            <th class="px-4 py-2 text-right text-xs font-medium text-purple-700 uppercase">FLASHCARDLAR ({{ stats.total_flashcards }})</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-purple-700 uppercase">ICHKI TAGLAR</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for data in tags_data %}
+                            <tr class="tag-row bg-purple-100 hover:bg-purple-200 transition">
+                                <td class="px-4 py-3 text-sm font-bold text-gray-900 sticky-cell-main bg-purple-100 z-10">
+                                    <i data-lucide="tag" class="w-4 h-4 inline mr-1 text-purple-600"></i>
+                                    {{ data.main.name }}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-right font-semibold text-purple-800">
+                                    {{ data.main_q }}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-right font-semibold text-purple-800">
+                                    {{ data.main_f }}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-600">
+                                    {% if data.sub_tags %}
+                                        <i data-lucide="folder-open" class="w-4 h-4 inline mr-1"></i>
+                                        {{ data.sub_tags|length }} ta
+                                    {% else %}
+                                        <span class="text-gray-400">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% for sub in data.sub_tags %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-2 text-sm text-gray-700 pl-10 sticky-cell-main bg-white z-10">
+                                        <i data-lucide="corner-down-right" class="w-3 h-3 inline mr-1 text-gray-400"></i>
+                                        {{ sub.name }}
+                                    </td>
+                                    <td class="px-4 py-2 text-sm text-right text-gray-600">
+                                        {{ sub.question_count }}
+                                    </td>
+                                    <td class="px-4 py-2 text-sm text-right text-gray-600">
+                                        {{ sub.flashcard_count }}
+                                    </td>
+                                    <td class="px-4 py-2 text-sm text-gray-400">-</td>
+                                </tr>
+                            {% endfor %}
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="px-4 py-6 text-center text-gray-500">
+                                    Taglar mavjud emas
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Lucide ikonalar
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+</script>
+{% endblock %}

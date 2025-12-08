@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% load static i18n widget_tweaks %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" rel="stylesheet" />
+<style>
+    .btn {
+        @apply inline-flex items-center px-5 py-2.5 font-bold rounded-xl transition shadow-md;
+    }
+    .btn-primary {
+        @apply bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700;
+    }
+    .btn-secondary {
+        @apply bg-gray-500 text-white hover:bg-gray-600;
+    }
+    .form-control {
+        @apply block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition;
+    }
+    .field-container {
+        @apply space-y-2;
+    }
+
+    /* SELECT2 – CHIROYLASH */
+    .select2-container--default .select2-selection--multiple {
+        @apply border border-slate-300 rounded-xl px-3 py-2 min-h-12 transition;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        @apply ring-2 ring-indigo-500 ring-opacity-50 border-indigo-500;
+    }
+    .select2-selection__choice {
+        @apply bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-full px-3 py-1 text-sm font-medium mr-2 mt-1;
+    }
+    .select2-selection__choice__remove {
+        @apply text-indigo-600 hover:text-red-600 ml-2 font-bold;
+    }
+    .select2-results__option--highlighted {
+        @apply bg-indigo-600 text-white;
+    }
+    .select2-results__option {
+        @apply px-4 py-2;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6">
+    <div class="bg-white rounded-3xl shadow-2xl p-8 border border-slate-100">
+        <div class="flex items-center gap-4 mb-8 pb-6 border-b border-slate-200">
+            <i class="ti ti-users-cog text-4xl text-indigo-600"></i>
+            <h2 class="text-3xl font-extrabold text-slate-800">{{ title }}</h2>
+        </div>
+
+        <form method="post" class="space-y-8">
+            {% csrf_token %}
+
+            <!-- GURUH NOMI -->
+            <div class="field-container">
+                <label for="{{ form.name.id_for_label }}" class="block text-sm font-bold text-slate-700 mb-2">
+                    {{ form.name.label }} <span class="text-red-500">*</span>
+                </label>
+                {% render_field form.name class="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="Masalan: Inglizcha A1 Guruh" %}
+                {% if form.name.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- KURSLAR -->
+            <div class="field-container">
+                <label for="{{ form.courses.id_for_label }}" class="block text-sm font-bold text-slate-700 mb-2">
+                    {{ form.courses.label }} <span class="text-red-500">*</span>
+                </label>
+                {% render_field form.courses class="form-control select2-courses" %}
+                <p class="text-sm text-slate-500 mt-2">Guruh qaysi kurslarga tegishli bo‘lishini tanlang.</p>
+                {% if form.courses.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.courses.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- O‘QUVCHILAR -->
+            <div class="field-container">
+                <label for="{{ form.students.id_for_label }}" class="block text-sm font-bold text-slate-700 mb-2">
+                    {{ form.students.label }}
+                </label>
+                {% render_field form.students class="form-control select2-students" %}
+                <p class="text-sm text-slate-500 mt-2">
+                    F.I.Sh, username yoki telefon raqami bo‘yicha qidiring.
+                </p>
+                {% if form.students.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.students.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- AKTIV HOLAT -->
+            <div class="field-container border-b pb-6">
+                <label class="inline-flex items-center cursor-pointer">
+                    {% render_field form.is_active class="h-5 w-5 text-indigo-600 rounded mr-3 focus:ring-indigo-500" %}
+                    <span class="text-sm font-medium text-slate-700">{{ form.is_active.label }}</span>
+                </label>
+            </div>
+
+            <!-- TUGMALAR -->
+            <div class="flex justify-between items-center pt-6">
+                <a href="{% url 'group_list' slug=center.slug %}" class="btn btn-secondary">
+                    <i class="ti ti-arrow-left mr-2"></i> Orqaga
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    {% if is_create %}
+                        <i class="ti ti-plus mr-2"></i> Guruhni Yaratish
+                    {% else %}
+                        <i class="ti ti-device-floppy mr-2"></i> Saqlash
+                    {% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // KURSLAR – Oddiy Select2
+    $('.select2-courses').select2({
+        placeholder: "Kurslarni tanlang...",
+        allowClear: true,
+        multiple: true,
+        width: '100%',
+        language: {
+            noResults: function() { return "Kurs topilmadi"; }
+        }
+    });
+
+    // O‘QUVCHILAR – AJAX Select2
+    $('.select2-students').select2({
+        placeholder: "O‘quvchilarni qidiring (F.I.Sh / Username / Telefon)...",
+        allowClear: true,
+        multiple: true,
+        minimumInputLength: 2,
+        width: '100%',
+        language: {
+            noResults: function() { return "O‘quvchi topilmadi"; },
+            searching: function() { return "Qidirilmoqda..."; },
+            inputTooShort: function() { return "Kamida 2 ta belgi kiriting"; }
+        },
+        ajax: {
+            url: "{% url 'search_students_ajax' slug=center.slug %}",
+            dataType: 'json',
+            delay: 300,
+            data: function(params) {
+                return {
+                    q: params.term,
+                    page: params.page || 1
+                };
+            },
+            processResults: function(data) {
+                return {
+                    results: data.items.map(function(item) {
+                        return {
+                            id: item.id,
+                            text: item.text || item.full_name || item.username
+                        };
+                    }),
+                    pagination: {
+                        more: data.has_more
+                    }
+                };
+            },
+            cache: true
+        }
+    });
+
+    // TAHIRLASH REJIMIDA MAVJUD O‘QUVCHILARNI YUKLASH
+    {% if form.instance.pk and form.initial.students %}
+    var initialStudents = {{ form.initial.students|safe }};
+    initialStudents.forEach(function(studentId) {
+        var option = new Option(
+            $('.select2-students option[value="' + studentId + '"]').text() || 'O‘quvchi',
+            studentId,
+            true,
+            true
+        );
+        $('.select2-students').append(option).trigger('change');
+    });
+    {% endif %}
+
+    // KURSLAR – Tahrirlashda
+    {% if form.instance.pk and form.initial.courses %}
+    var initialCourses = {{ form.initial.courses|safe }};
+    initialCourses.forEach(function(courseId) {
+        var option = new Option(
+            $('.select2-courses option[value="' + courseId + '"]').text(),
+            courseId,
+            true,
+            true
+        );
+        $('.select2-courses').append(option).trigger('change');
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static i18n widget_tweaks %}
+
+{% block title %}Dars {{ form.instance.pk|yesno:'Tahrirlash,Yaratish' }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8 max-w-2xl">
+
+    <div class="flex items-center mb-8 space-x-4">
+        <a href="{% url 'lesson_list' module_id=module.id %}" 
+           class="text-gray-500 hover:text-indigo-600 transition p-3 rounded-full hover:bg-gray-100 shadow-md">
+            <i class="fas fa-arrow-left text-2xl"></i>
+        </a>
+        <h1 class="text-3xl font-extrabold text-gray-900">
+            Dars {{ form.instance.pk|yesno:'Tahrirlash,Yaratish' }}
+        </h1>
+    </div>
+
+    <div class="bg-white p-8 md:p-12 rounded-2xl shadow-2xl border border-gray-200">
+        <p class="text-xl font-semibold text-gray-700 mb-8 border-b-2 border-indigo-100 pb-4">
+            Modul: <span class="text-indigo-600 font-bold">{{ module.title }}</span>
+        </p>
+
+        <!-- Eslatma -->
+        <div class="p-5 mb-8 bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-500 rounded-r-lg shadow-sm">
+            <p class="font-bold text-yellow-800">Eslatma:</p>
+            <p class="text-sm text-yellow-700 mt-1">
+                Agar <strong>Mavzu testi</strong> tanlanmasa, talaba darsni faqat resurslarni ko‘rib tugatadi. 
+                Tartib raqami avtomatik belgilanadi.
+            </p>
+        </div>
+
+        <!-- Forma -->
+        <form method="post" class="space-y-8">
+            {% csrf_token %}
+
+            <!-- Dars nomi -->
+            <div>
+                <label class="block text-lg font-semibold text-gray-800 mb-2">
+                    Dars nomi <span class="text-red-500">*</span>
+                </label>
+                {% render_field form.title class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl shadow-inner focus:outline-none focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 transition duration-200 text-lg" placeholder="Masalan: Algebra asoslari – 1-qism" %}
+                {% for error in form.title.errors %}
+                    <p class="mt-2 text-sm text-red-600 font-medium">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <!-- Mavzu testi – Select2 bilan -->
+            <div>
+                <label class="block text-lg font-semibold text-gray-800 mb-2">
+                    Bog‘langan mavzu testi (ixtiyoriy)
+                </label>
+                <div class="select2-wrapper">
+                    {% render_field form.related_exam class="select2-field w-full" %}
+                </div>
+                <p class="mt-3 text-sm text-gray-600">
+                    <i class="fas fa-search text-indigo-500 mr-1"></i>
+                    Yozib qidiring: "algebra", "fizika", "10-sinf", "SAT math"...
+                </p>
+                {% for error in form.related_exam.errors %}
+                    <p class="mt-2 text-sm text-red-600 font-medium">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <!-- Yashirin maydonlar -->
+            {% for hidden in form.hidden_fields %}
+                {{ hidden }}
+            {% endfor %}
+
+            <!-- Saqlash tugmasi -->
+            <div class="flex justify-end pt-8 border-t-2 border-gray-200">
+                <button type="submit" 
+                        class="px-10 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg rounded-xl shadow-xl hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 transition duration-300 flex items-center">
+                    <i class="fas fa-save mr-3"></i>
+                    Saqlash
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // base.html da jQuery va Select2 allaqachon yuklangan — shuning uchun faqat ishga tushiramiz!
+    document.addEventListener('DOMContentLoaded', function() {
+        $('.select2-field').select2({
+            placeholder: "Mavzu testini qidiring...",
+            allowClear: true,
+            width: '100%',
+            dropdownCssClass: "shadow-2xl border-2 border-indigo-200 rounded-xl z-50",
+            containerCssClass: "select2-custom-container",
+            language: {
+                noResults: function() { return "Hech narsa topilmadi"; },
+                searching: function() { return "Qidirilmoqda..."; }
+            }
+        });
+
+        // Select2 ning ichki qismini ham chiroyli qilamiz
+        $('.select2-container').addClass('mt-2');
+        $('.select2-selection--single').addClass('h-14 text-lg rounded-xl border-2 border-gray-300 focus:border-indigo-500');
+    });
+</script>
+
+<style>
+    /* Select2 ni Tailwind bilan to‘liq moslashtirish */
+    .select2-container--default .select2-selection--single {
+        height: 56px !important;
+        padding: 12px 16px !important;
+        border-radius: 12px !important;
+        border: 2px solid #d1d5db !important;
+        background-color: white;
+        font-size: 1.125rem;
+    }
+    .select2-container--default .select2-selection--single:focus {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 32px !important;
+        color: #1f2937;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 52px !important;
+        right: 12px !important;
+    }
+    .select2-dropdown {
+        border-radius: 12px !important;
+        border: 2px solid #6366f1 !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+{% load humanize %} 
+
+{% block title %}Mening Flashcard Statistikalrim{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 py-8 px-4">
+    <div class="max-w-7xl mx-auto">
+    
+        <div class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-800 mb-4">
+                <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    Flashcard Statistikasi <span class="text-indigo-600">🎯</span>
+                </span>
+            </h1>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+                O'zlashtirish jarayoningizni kuzatib boring va <b>Spaced Repetition (SM2)</b> tizimi yordamida bilimingizni mustahkamlang.
+            </p>
+        </div>
+
+        <div class="max-w-5xl mx-auto mb-12">
+            <div class="bg-white p-6 sm:p-10 rounded-3xl shadow-2xl border border-gray-100 transform hover:shadow-3xl transition duration-500 ease-in-out">
+                <h3 class="text-3xl font-bold text-gray-800 mb-8 border-b border-indigo-100 pb-3 flex items-center">
+                    <i class="fas fa-chart-pie text-indigo-500 mr-3"></i> Umumiy O'zlashtirish Paneli
+                </h3>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-10 items-center">
+                    
+                    <div class="lg:col-span-1 flex justify-center">
+                        <div class="progress-donut" style="--success-color: #10b981; --secondary-color: #3b82f6;">
+                            <svg width="250" height="250" viewBox="0 0 36 36" class="progress-donut__svg">
+                                <circle cx="18" cy="18" r="15.915" class="progress-donut__circle progress-donut__circle-bg" 
+                                        style="stroke: #e2e8f0; fill: none; stroke-width: 3.8;"></circle>
+                                
+                                <circle cx="18" cy="18" r="15.915" class="progress-donut__circle progress-donut__circle-segment"
+                                        style="stroke: var(--success-color); stroke-dasharray: {{ learned_percentage|floatformat:1 }}, 100; stroke-dashoffset: 0; fill: none; stroke-width: 3.8; stroke-linecap: round;"></circle>
+                                
+                                <circle cx="18" cy="18" r="15.915" class="progress-donut__circle progress-donut__circle-segment"
+                                        style="stroke: var(--secondary-color); stroke-dasharray: {{ learning_percentage|floatformat:1 }}, 100; stroke-dashoffset: -{{ learned_percentage|floatformat:1 }}; fill: none; stroke-width: 3.8; stroke-linecap: round;"></circle>
+                                
+                                <circle cx="18" cy="18" r="15.915" class="progress-donut__circle progress-donut__circle-segment"
+                                        style="stroke: #f59e0b; stroke-dasharray: {{ new_percentage|floatformat:1 }}, 100; stroke-dashoffset: -{{ learned_percentage|floatformat:1|add:learning_percentage|floatformat:1 }}; fill: none; stroke-width: 3.8; stroke-linecap: round;"></circle>
+                            </svg>
+                            <div class="progress-donut__center-text">
+                                <div class="total-count">{{ total_flashcards }}</div>
+                                <div class="total-label">Jami Kartochka</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2 space-y-5">
+                        <div class="flex items-center p-5 bg-green-50 rounded-xl shadow-md border-l-4 border-green-500 hover:bg-green-100 transition duration-300 transform hover:-translate-y-0.5">
+                            <div class="w-4 h-4 rounded-full bg-green-500 mr-5 flex-shrink-0 animate-pulse-slow"></div>
+                            <div class="flex-grow">
+                                <p class="text-lg font-bold text-gray-800">O'zlashtirilgan</p>
+                                <p class="text-sm text-green-600 font-semibold">{{ learned_percentage|floatformat:1 }}%</p>
+                            </div>
+                            <p class="text-3xl font-extrabold text-green-700">{{ learned_count }}</p>
+                        </div>
+                        
+                        <div class="flex items-center p-5 bg-blue-50 rounded-xl shadow-md border-l-4 border-blue-500 hover:bg-blue-100 transition duration-300 transform hover:-translate-y-0.5">
+                            <div class="w-4 h-4 rounded-full bg-blue-500 mr-5 flex-shrink-0 animate-pulse-slow"></div>
+                            <div class="flex-grow">
+                                <p class="text-lg font-bold text-gray-800">O'rganilayotgan</p>
+                                <p class="text-sm text-blue-600 font-semibold">{{ learning_percentage|floatformat:1 }}%</p>
+                            </div>
+                            <p class="text-3xl font-extrabold text-blue-700">{{ learning_count }}</p>
+                        </div>
+                        
+                        <div class="flex items-center p-5 bg-yellow-50 rounded-xl shadow-md border-l-4 border-yellow-500 hover:bg-yellow-100 transition duration-300 transform hover:-translate-y-0.5">
+                            <div class="w-4 h-4 rounded-full bg-yellow-500 mr-5 flex-shrink-0 animate-pulse-slow"></div>
+                            <div class="flex-grow">
+                                <p class="text-lg font-bold text-gray-800">Yangi</p>
+                                <p class="text-sm text-yellow-600 font-semibold">{{ new_percentage|floatformat:1 }}%</p>
+                            </div>
+                            <p class="text-3xl font-extrabold text-yellow-700">{{ new_count }}</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-12 max-w-5xl mx-auto">
+            
+            <div class="flex flex-col bg-white p-6 rounded-2xl shadow-xl border-t-8 border-green-500 hover:shadow-2xl transition duration-300 transform hover:scale-[1.02]">
+                <div class="flex-grow">
+                    <i class="fas fa-check-circle text-5xl text-green-600 mb-4"></i>
+                    <p class="text-md font-extrabold text-green-600 uppercase tracking-wider">O'zlashtirilgan</p>
+                    <p class="text-6xl font-extrabold text-gray-900 mt-2">{{ learned_count }}</p>
+                </div>
+                {% if learned_count > 0 %}
+                <div class="mt-6 space-y-3">
+                    <a href="{% url 'practice_flashcards' center.slug 'learned' %}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-green-800 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150">
+                        <i class="fas fa-redo-alt mr-2"></i> Mustahkamlash (Mashq)
+                    </a>
+                    <a href="{% url 'flashcard_status_list' center.slug 'learned' %}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 shadow-md">
+                        <i class="fas fa-list-alt mr-2"></i> Ro'yxatni tahlil qilish
+                    </a>
+                </div>
+                {% else %}
+                <p class="mt-4 text-sm text-gray-500">Yangi lug'atlarni o'rganishni boshlang.</p>
+                {% endif %}
+            </div>
+
+            <div class="flex flex-col bg-white p-6 rounded-2xl shadow-xl border-t-8 border-blue-500 hover:shadow-2xl transition duration-300 transform hover:scale-[1.02]">
+                <div class="flex-grow">
+                    <i class="fas fa-hourglass-half text-5xl text-blue-600 mb-4"></i>
+                    <p class="text-md font-extrabold text-blue-600 uppercase tracking-wider">O'rganilayotgan</p>
+                    <p class="text-6xl font-extrabold text-gray-900 mt-2">{{ learning_count }}</p>
+                </div>
+                {% if learning_count > 0 %}
+                <div class="mt-6 space-y-3">
+                    <a href="{% url 'practice_flashcards' center.slug 'learning' %}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-blue-800 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150">
+                        <i class="fas fa-brain mr-2"></i> Takrorlash (Mashq)
+                    </a>
+                    <a href="{% url 'flashcard_status_list' center.slug 'learning' %}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 shadow-md">
+                        <i class="fas fa-list-alt mr-2"></i> Ro'yxatni tahlil qilish
+                    </a>
+                </div>
+                {% else %}
+                <p class="mt-4 text-sm text-gray-500">A'lo! Hozircha o'rganilayotgan kartochka yo'q.</p>
+                {% endif %}
+            </div>
+            
+            <div class="flex flex-col bg-white p-6 rounded-2xl shadow-xl border-t-8 border-yellow-500 hover:shadow-2xl transition duration-300 transform hover:scale-[1.02]">
+                <div class="flex-grow">
+                    <i class="fas fa-star text-5xl text-yellow-500 mb-4"></i>
+                    <p class="text-md font-extrabold text-yellow-600 uppercase tracking-wider">Yangi</p>
+                    <p class="text-6xl font-extrabold text-gray-900 mt-2">{{ new_count }}</p>
+                </div>
+                {% if new_count > 0 %}
+                <div class="mt-6 space-y-3">
+                    <a href="{% url 'practice_flashcards' center.slug 'new' %}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-yellow-800 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition duration-150">
+                        <i class="fas fa-play-circle mr-2"></i> O'rganishni boshlash
+                    </a>
+                    <a href="{% url 'flashcard_status_list' center.slug 'new' %}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition duration-150 shadow-md">
+                        <i class="fas fa-list-alt mr-2"></i> Ro'yxatni tahlil qilish
+                    </a>
+                </div>
+                {% else %}
+                <p class="mt-4 text-sm text-gray-500">Barcha lug'atlar o'rganilgan yoki o'rganilmoqda!</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if tag_stats %}
+        <div class="max-w-5xl mx-auto mb-12">
+            <div class="bg-white p-6 sm:p-10 rounded-3xl shadow-2xl border border-gray-100">
+                <h3 class="text-3xl font-bold text-gray-800 mb-8 border-b border-indigo-100 pb-3 flex justify-between items-center">
+                    <span>Taglar (Mavzular) Bo'yicha O'zlashtirish 📚</span>
+                    <span class="text-base font-normal text-gray-500 bg-indigo-50 px-3 py-1 rounded-full">Jami Taglar: {{ tag_stats|length }}</span>
+                </h3>
+
+                <div class="space-y-6">
+                    {% for tag in tag_stats %}
+                    <div class="p-5 bg-gray-50 rounded-xl border-l-4 border-indigo-400 shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1">
+                        
+                        <div class="mb-4 flex justify-between items-center">
+                            <div>
+                                <p class="text-xs font-medium text-indigo-500 uppercase tracking-widest">{{ tag.hierarchy }}</p>
+                                <a href="{% url 'flashcard_status_list_by_tag' center.slug tag.slug %}" class="text-2xl font-extrabold text-indigo-700 hover:text-indigo-900 transition duration-150">
+                                    {{ tag.name }}
+                                </a>
+                            </div>
+                            <span class="text-3xl font-extrabold text-indigo-600">{{ tag.learned_percentage|floatformat:0 }}%</span>
+                        </div>
+                        
+                        <div class="relative pt-1 mb-4">
+                            <div class="flex mb-2 items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-200">
+                                        {{ tag.learned_count }}/{{ tag.total_count }} FC
+                                    </span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs font-semibold inline-block text-green-600">
+                                        O'zlashtirilgan
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-indigo-200">
+                                <div style="width:{{ tag.learned_percentage|floatformat:0 }}%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500 transition-all duration-500 ease-out"></div>
+                                <div style="width:{{ tag.learning_percentage|floatformat:0 }}%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500 transition-all duration-500 ease-out"></div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                            <div class="text-center p-3 rounded-lg bg-indigo-100/50">
+                                <p class="text-xs font-semibold text-indigo-700 uppercase">Jami FC</p>
+                                <p class="text-xl font-bold text-indigo-900">{{ tag.total_count }}</p>
+                            </div>
+                            <div class="text-center p-3 rounded-lg bg-green-100/50">
+                                <p class="text-xs font-semibold text-green-700 uppercase">O'zlashtirilgan</p>
+                                <p class="text-xl font-bold text-green-700">{{ tag.learned_count }}</p>
+                            </div>
+                            <div class="text-center p-3 rounded-lg bg-blue-100/50">
+                                <p class="text-xs font-semibold text-blue-700 uppercase">O'rganilmoqda</p>
+                                <p class="text-xl font-bold text-blue-700">{{ tag.learning_count }}</p>
+                            </div>
+                            <div class="text-center p-3 rounded-lg bg-yellow-100/50">
+                                <p class="text-xs font-semibold text-yellow-700 uppercase">Yangi</p>
+                                <p class="text-xl font-bold text-yellow-700">{{ tag.new_count }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-inner">
+                            <p class="text-sm font-bold text-gray-700 mb-3 border-b pb-2">Mashq Natijalari ({{ tag.total_attempts }} urinish)</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chart-bar text-3xl text-red-500 mr-3"></i>
+                                    <div>
+                                        <p class="text-xs text-gray-500">Muvaffaqiyat Darajasi</p>
+                                        <p class="text-lg font-bold text-red-700">{{ tag.success_rate|floatformat:1 }}%</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-clock text-3xl text-amber-500 mr-3"></i>
+                                    <div>
+                                        <p class="text-xs text-gray-500">O'rtacha Vaqt</p>
+                                        <p class="text-lg font-bold text-amber-700">
+                                            {{ tag.avg_time_spent|floatformat:1|default:0 }}s
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <a href="{% url 'practice_flashcards_by_tag' center.slug tag.slug 'review' %}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-base font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-lg transition duration-150">
+                                <i class="fas fa-play mr-2"></i> {{ tag.name }} ni o'rganishni boshlash
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="max-w-4xl mx-auto mt-16">
+            {% if review_needed_count > 0 %}
+                <div class="text-center bg-white p-10 rounded-3xl shadow-3xl border-4 border-indigo-600 animate-pulse-border">
+                    <i class="fas fa-calendar-alt text-6xl text-indigo-600 mb-5 animate-bounce-slow"></i>
+                    <h3 class="text-4xl font-extrabold text-gray-900">Bugun Takrorlash Kerak!</h3>
+                    <p class="text-8xl font-extrabold text-indigo-700 my-6 leading-none">{{ review_needed_count }}</p>
+                    <p class="text-lg text-gray-600 max-w-md mx-auto">
+                        <b>SM2 algoritmi</b> bo'yicha bu kartochkalarni eslatish vaqti keldi. Ularni takrorlab, bilimlarni mustahkamlang!
+                    </p>
+                    <a href="{% url 'practice_flashcards' center.slug 'review' %}" class="inline-flex items-center mt-8 px-12 py-4 border border-transparent text-xl font-extrabold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-indigo-500 shadow-xl transform hover:scale-[1.05] transition duration-300">
+                        <i class="fas fa-play mr-3"></i> Takrorlashni Boshlash
+                    </a>
+                </div>
+            {% elif next_review_at %}
+                <div class="text-center bg-white p-10 rounded-3xl shadow-xl border-t-4 border-green-500">
+                    <i class="fas fa-check-double text-5xl text-green-600 mb-4"></i>
+                    <h3 class="text-3xl font-bold text-gray-800">Ajoyib Ish!</h3>
+                    <p class="text-lg text-gray-600 max-w-md mx-auto mt-3">
+                        Bugungi barcha rejalashtirilgan takrorlashlar tugatildi. Keyingi mashg'ulot vaqti:
+                    </p>
+                    <p class="mt-4 text-3xl font-extrabold text-indigo-600">{{ next_review_at|date:"F j, Y, H:i" }}</p>
+                </div>
+            {% else %}
+                <div class="text-center bg-white p-10 rounded-3xl shadow-xl border-t-4 border-gray-400">
+                    <i class="fas fa-rocket text-5xl text-gray-500 mb-4"></i>
+                    <h3 class="text-3xl font-bold text-gray-800">Hamma narsa joyida!</h3>
+                    <p class="text-lg text-gray-600 max-w-md mx-auto mt-3">
+                        Hozircha takrorlash talab qilinadigan kartochkalar yo'q. Yangi lug'atlarni o'rganishni boshlang yoki dam oling!
+                    </p>
+                    <a href="{% url 'all_exams' center.slug %}" class="inline-flex items-center mt-6 px-8 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 shadow-md transition duration-150">
+                        <i class="fas fa-file-alt mr-2"></i> Imtihonlarni Ko'rish
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+/* progress-donut markaziy matnni to'g'irlash uchun uslublar */
+.progress-donut {
+    position: relative;
+    width: 250px; /* Kichikroq ekranda o'lchamni belgilash */
+    height: 250px;
+    margin: 0 auto;
+}
+
+.progress-donut__svg {
+    transform: rotate(-90deg);
+}
+
+.progress-donut__center-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.progress-donut__center-text .total-count {
+    font-size: 3.5rem; /* Kattaroq shrift */
+    font-weight: 800;
+    color: #1e293b; /* slate-800 / gray-900 */
+    line-height: 1;
+}
+
+.progress-donut__center-text .total-label {
+    font-size: 1rem; /* Kattaroq shrift */
+    font-weight: 600;
+    color: #475569; /* slate-600 / gray-600 */
+    margin-top: 4px;
+}
+
+/* Animatsiya stili (Agar Tailwind klasslari ishlamasa) */
+@keyframes bounce-slow {
+    0%, 100% { transform: translateY(-5%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+    50% { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+}
+.animate-bounce-slow {
+    animation: bounce-slow 4s infinite;
+}
+
+@keyframes pulse-slow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+}
+.animate-pulse-slow {
+    animation: pulse-slow 3s infinite;
+}
+
+/* Maxsus Animatsiya: Review Card uchun border */
+@keyframes pulse-border {
+  0% { border-color: #6366f1; box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04); }
+  50% { border-color: #a5b4fc; box-shadow: 0 25px 50px -12px rgba(99, 102, 241, 0.25); }
+  100% { border-color: #6366f1; box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04); }
+}
+
+.animate-pulse-border {
+  animation: pulse-border 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+</style>
+<script>
+    // Agar Tailwind-dagi oddiy JS talab qilinsa, bu yerga yoziladi
+</script>
+{% endblock %}

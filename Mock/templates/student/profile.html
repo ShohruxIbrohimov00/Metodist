@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mening Profil{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 py-8 px-4">
+    <div class="max-w-7xl mx-auto">
+        <div class="max-w-5xl mx-auto">
+
+            <div class="max-w-full mx-auto mb-8 md:mb-10">
+                <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row items-center gap-6 transition">
+                    
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="Profil rasmi"
+                            class="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover ring-4 ring-orange-300 shadow-lg border-4 border-white flex-shrink-0">
+                    {% else %}
+                        <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-tr from-orange-500 to-amber-600 flex items-center justify-center text-white text-4xl font-extrabold ring-4 ring-orange-300 shadow-lg border-4 border-white flex-shrink-0">
+                            {{ user.get_full_name|slice:":1"|upper|default:user.username|slice:":1"|upper }}
+                        </div>
+                    {% endif %}
+
+                    <div class="flex-1 text-center md:text-left"> 
+                        <h1 class="text-3xl sm:text-4xl font-extrabold text-amber-900 tracking-tight">
+                            {{ user.get_full_name|default:user.username }}
+                        </h1>
+                        <p class="text-orange-600 font-semibold mt-1">
+                            Foydalanuvchi
+                        </p>
+                        <p class="text-amber-800 mt-2 text-sm max-w-lg">
+                            {{ user.bio|default:"Bio kiritilmagan. O‘zingiz haqingizda biror narsa qo‘shing!" }}
+                        </p>
+                        <p class="text-base text-slate-500 mt-2 flex items-center justify-center md:justify-start">
+                            <i class="fas fa-envelope mr-2 text-orange-400"></i>{{ user.email }}
+                        </p>
+                    </div>
+
+                    <div class="mt-4 md:mt-0 flex-shrink-0 w-full md:w-auto">
+                        <a href="{% url 'change_password' %}" 
+                            class="w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white font-extrabold text-base rounded-xl shadow-lg hover:shadow-2xl transition hover:from-rose-600 hover:to-pink-700 focus:ring-4 focus:ring-pink-300">
+                            <i class="fas fa-key"></i> Parolni o'zgartirish
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
+                <div class="border-b border-gray-200 px-6 md:px-8">
+                    <nav class="flex flex-wrap gap-4" id="profile-tabs">
+                        
+                        <button data-tab="personal" 
+                                class="tab-btn active flex-1 text-center py-4 px-2 whitespace-nowrap">
+                            Shaxsiy ma'lumotlar
+                        </button>
+                        
+                        <button data-tab="balance" 
+                                class="tab-btn flex-1 text-center py-4 px-2 whitespace-nowrap">
+                            Balans va obuna
+                        </button>
+                        
+                        <button data-tab="stats" 
+                                class="tab-btn flex-1 text-center py-4 px-2 whitespace-nowrap">
+                            Statistika
+                        </button>
+                        
+                    </nav>
+                </div>
+
+                <div class="p-6 md:p-10">
+
+                    <div id="personal-content" class="tab-content">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-8 border-b pb-4">Profilni tahrirlash 📝</h2>
+
+                        <form action="{% url 'profile' center.slug %}" method="POST" enctype="multipart/form-data" class="grid md:grid-cols-2 gap-10">
+                            {% csrf_token %}
+
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">To'liq ism</label>
+                                    {{ form.full_name }} 
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Email</label>
+                                    {{ form.email }}
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Bio (ixtiyoriy)</label>
+                                    {{ form.bio }}
+                                </div>
+                            </div>
+
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Profil rasmi</label>
+                                    {{ form.profile_picture }}
+                                    {% if user.profile_picture %}
+                                        <div class="mt-4 p-4 border rounded-xl bg-gray-50 flex items-center gap-4">
+                                            <img src="{{ user.profile_picture.url }}" class="w-20 h-20 rounded-lg object-cover shadow-md">
+                                            <div>
+                                                <p class="text-sm font-medium text-slate-700">Joriy profil rasmi</p>
+                                                <p class="text-xs text-slate-500">Yangi rasm yuklash uchun yuqoriga fayl tanlang.</p>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="md:pt-8">
+                                    <button type="submit" class="w-full md:w-auto px-10 py-3.5 
+                                        bg-gradient-to-r from-rose-500 to-pink-600 text-white font-extrabold rounded-xl shadow-lg 
+                                        hover:from-rose-600 hover:to-pink-700 hover:shadow-xl transition transform hover:-translate-y-0.5 
+                                        focus:ring-4 focus:ring-pink-300">
+                                        <i class="fas fa-save mr-2"></i> Ma'lumotlarni saqlash
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div id="balance-content" class="tab-content hidden">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-8 border-b pb-4">💳 Balans va Obuna Boshqaruvi</h2>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            
+                            <div class="bg-white rounded-xl p-6 border-2 border-orange-300 shadow-xl transition hover:shadow-2xl">
+                                <div class="flex items-center gap-3 mb-5 border-b pb-3">
+                                    <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-crown text-yellow-500 text-xl"></i> 
+                                    </div>
+                                    <h3 class="text-xl font-bold text-orange-700">Obuna holati</h3>
+                                </div>
+                                {% if subscription and subscription.is_active %}
+                                    <div class="space-y-3">
+                                        <div class="flex justify-between items-center bg-orange-50 p-3 rounded-lg border-l-4 border-orange-600">
+                                            <span class="font-medium text-slate-600">Tarif:</span> 
+                                            <span class="font-bold text-orange-800">{{ subscription.plan.name }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center bg-green-50 p-3 rounded-lg border-l-4 border-green-600">
+                                            <span class="font-medium text-slate-600">Holat:</span> 
+                                            <span class="text-green-700 font-extrabold">Faol</span>
+                                        </div>
+                                        <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg border-l-4 border-gray-400">
+                                            <span class="font-medium text-slate-600">Tugash sanasi:</span> 
+                                            <span class="text-slate-700 font-semibold">{{ subscription.end_date|date:"d M, Y" }}</span>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="text-center py-8 bg-orange-50 rounded-lg border border-orange-200">
+                                        <i class="far fa-sad-tear text-4xl text-orange-400 mb-3"></i>
+                                        <p class="text-slate-600 mb-5 font-medium">Hozirda faol obuna mavjud emas.</p>
+                                        <a href="{% url 'price' center.slug %}" class="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white font-semibold rounded-xl hover:from-rose-600 hover:to-pink-700 transition shadow-lg">
+                                            Obuna sotib olish
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="bg-white rounded-xl p-6 border-2 border-emerald-300 shadow-xl transition hover:shadow-2xl">
+                                <div class="flex items-center gap-3 mb-5 border-b pb-3">
+                                    <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-gem text-emerald-500 text-xl"></i>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-emerald-700">Foydalaniladigan Kreditlar</h3>
+                                </div>
+
+                                {% if user_balance %}
+                                    <div class="space-y-4">
+                                        <div class="bg-gradient-to-r from-teal-100 to-white rounded-xl p-4 flex justify-between items-center shadow-md border-l-4 border-teal-600">
+                                            <span class="font-medium text-slate-700 flex items-center gap-2">
+                                                <i class="fas fa-laptop-code text-teal-500"></i> Imtihon kreditlari
+                                            </span>
+                                            <span class="text-3xl font-extrabold text-teal-700">{{ user_balance.exam_credits }}</span>
+                                        </div>
+                                        <div class="bg-gradient-to-r from-emerald-100 to-white rounded-xl p-4 flex justify-between items-center shadow-md border-l-4 border-emerald-600">
+                                            <span class="font-medium text-slate-700 flex items-center gap-2">
+                                                <i class="fas fa-book-open text-emerald-500"></i> Yechim ko'rish kreditlari
+                                            </span>
+                                            <span class="text-3xl font-extrabold text-emerald-700">{{ user_balance.solution_view_credits }}</span>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <p class="text-center text-slate-500 py-8">Kreditlar mavjud emas</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="stats-content" class="tab-content hidden">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-8 border-b pb-4">📊 Statistik ko'rsatkichlar</h2>
+                        <div class="text-center py-20 bg-gray-50 rounded-xl border border-dashed border-gray-300 text-slate-400">
+                            <i class="fas fa-chart-line text-8xl mb-4 text-orange-300"></i>
+                            <p class="text-2xl font-semibold">Statistika tez orada qo'shiladi</p>
+                            <p class="text-md mt-2">Bu yerda sizning faoliyatingiz, test natijalaringiz va o'sish dinamikangiz aks etadi.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* MUHIM ESLATMA: 
+    Quyidagi CSS klassini ishlatish uchun, siz Django Formsda fieldlarga 
+    qo'lda .form-field klassini qo'shishingiz shart (masalan, forms.py da widgetlar orqali).
+    */
+    .form-field {
+        @apply w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition shadow-sm;
+    }
+    textarea.form-field {
+        @apply min-h-32 resize-y;
+    }
+
+    /* --- TAB TUGMALARI UCHUN YANIGILANGAN STIL (Orange/Amber) --- */
+    .tab-btn {
+        /* Barcha tugmalar uchun standart uslub */
+        @apply relative text-lg font-medium text-slate-600 hover:text-orange-600 transition duration-200;
+        /* Pastki chiziq effekti uchun joy ajratish */
+        border-bottom: 3px solid transparent; 
+        padding-bottom: 1rem;
+    }
+
+    /* Faol (ACTIVE) tab uchun uslublar */
+    .tab-btn.active {
+        /* Faol tugmani to'liq ajratish */
+        @apply text-orange-600 font-bold;
+        /* Qalin orange rangli pastki chiziq */
+        border-bottom: 3px solid #ea580c; /* orange-600 rang kodi */
+    }
+
+    /* Sichqoncha ustida ushlab turilgandagi uslub (faqat faol bo'lmaganlar uchun) */
+    .tab-btn:hover:not(.active) {
+        /* Matn rangi hoverda o'zgaradi */
+        @apply text-orange-500;
+        /* Pastki chiziqni ochroq rangga o'zgartirish */
+        border-bottom: 3px solid #fed7aa; /* orange-200 rang kodi */
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('#profile-tabs .tab-btn');
+    const contents = document.querySelectorAll('.tab-content');
+    
+    // Django Forms orqali render qilingan fieldlarga 'form-field' klassini qo'shish (agar kerak bo'lsa)
+    // Agar siz buni backendda (forms.py da) hal qilgan bo'lsangiz, bu qism shart emas.
+    // Lekin hamma inputlarga stil qo'shish uchun:
+    document.querySelectorAll('input, textarea, select').forEach(field => {
+        // Faqat Django o'zi render qilgan fieldlarga klass qo'shish uchun shart qo'yishingiz mumkin.
+        // Hozircha oddiylik uchun form ichidagi barcha inputlarga qo'shildi.
+        if (!field.classList.contains('form-field')) {
+            field.classList.add('form-field');
+        }
+    });
+
+    // Funksiya: Barcha tablardan 'active' ni olib tashlab, kerakli tabni faollashtirish
+    const activateTab = (tabElement) => {
+        const targetId = tabElement.dataset.tab + '-content';
+
+        // Barcha tugmalardan 'active' klassini olib tashlash
+        tabs.forEach(t => t.classList.remove('active'));
+        // Bosilgan tugmaga 'active' klassini qo'shish
+        tabElement.classList.add('active');
+
+        // Barcha kontentlarni yashirish
+        contents.forEach(c => c.classList.add('hidden'));
+        
+        // Kerakli kontentni ko'rsatish
+        const targetContent = document.getElementById(targetId);
+        if (targetContent) {
+            targetContent.classList.remove('hidden');
+        }
+    };
+
+    // Sahifa yuklanganda ishlashini ta'minlash uchun
+    const initialActiveTab = document.querySelector('#profile-tabs .tab-btn.active');
+    if (initialActiveTab) {
+        // Kontentni ko'rsatish
+        const initialTargetId = initialActiveTab.dataset.tab + '-content';
+        const initialContent = document.getElementById(initialTargetId);
+        if (initialContent) {
+            initialContent.classList.remove('hidden');
+        }
+    } else if (tabs.length > 0) {
+        // Agar 'active' belgilanish bo'lmasa, birinchisini faollashtirish
+        activateTab(tabs[0]);
+    }
+
+    // Tab tugmalariga hodisa tinglovchisini qo'shish
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            activateTab(tab);
+        });
+    });
+});
+</script>
+{% endblock %}

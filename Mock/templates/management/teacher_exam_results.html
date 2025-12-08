@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% load static utils %} 
+
+{% block title %}{{ exam.title }} Natijalari{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+/* ------------------------------------------------------------------ */
+/* 1. QIDIRUV MAYDONI UCHUN ENG KUCHLI STIL (Imtihonlar ro'yxatidan olingan) */
+/* ------------------------------------------------------------------ */
+
+/* search-input-wrapper sinfi to'liq o'tkazildi */
+.search-input-wrapper {
+    /* Inputni max kenglikda markazga joylashni majburlash */
+    /* Tailwind sinflari endi !important orqali bekor qilinadi. */
+    width: 100% !important;
+    max-width: 32rem !important; /* max-w-2xl */
+    margin-left: auto !important;
+    margin-right: auto !important;
+    margin-top: 1.5rem !important; /* my-6 */
+    margin-bottom: 1.5rem !important; /* my-6 */
+}
+
+/* Input elementining ID'si oldingi sahifadagi kabi to'g'rilandi (searchExamInput o'rniga searchStudentInput ishlatiladi) */
+#searchStudentInput {
+    /* WIDGET QOIDALARI: Barcha uslublarni !important bilan kuchaytirish */
+    
+    /* Joylashuv va kattalik */
+    width: 100% !important;
+    
+    /* Padding va Bo'shliq */
+    padding-left: 3rem !important; /* Ikonka uchun joy */
+    padding-right: 1.25rem !important;
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+    
+    /* Vizual uslublar */
+    border: 1px solid rgb(203 213 225) !important; /* border-slate-300 */
+    border-radius: 0.75rem !important; /* rounded-xl */
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05) !important; /* shadow-lg */
+    color: rgb(71 85 105) !important; /* text-slate-700 */
+    font-size: 1rem !important; /* text-base */
+    line-height: 1.5 !important;
+
+    /* Ikonka uslubi (fon rasmi) */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='h-6 w-6 text-slate-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: left 12px center !important;
+    background-size: 20px !important;
+    background-color: white !important; /* Oq fonni majburlash */
+    
+    /* Fokus uslublari */
+    transition: all 0.2s ease-in-out !important;
+    outline: none !important;
+}
+
+/* Fokuslanganda border va ring uslubini majburlash */
+#searchStudentInput:focus {
+    border-color: #4f46e5 !important; /* Indigo: Toza ko'rinish uchun */
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2) !important; /* Ringni taqlid qilish */
+}
+
+
+/* ------------------------------------------------------------------ */
+/* 2. JADVAL VA BADGE UCHUN STIL */
+/* ------------------------------------------------------------------ */
+.badge {
+    @apply px-3 py-1.5 rounded-full text-xs font-semibold;
+}
+/* Natija badge uslublari (oldingi javobingizdagi kabi) */
+.badge-high { @apply bg-green-100 text-green-700; }
+.badge-med { @apply bg-yellow-100 text-yellow-700; }
+.badge-low { @apply bg-red-100 text-red-700; }
+.badge-sat { @apply bg-indigo-100 text-indigo-700; }
+
+.table-header {
+    @apply font-bold text-sm uppercase tracking-wider;
+}
+.table-row-hover:hover {
+    background-color: rgba(99, 102, 241, 0.05) !important; /* Indigo-50 ni majburlash */
+    @apply transition duration-150;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="bg-white rounded-3xl shadow-2xl p-8">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-indigo-700">{{ exam.title }}</h1>
+                <p class="text-slate-600">Imtihon turi: <strong>{{ exam.get_section_type_display }}</strong></p>
+            </div>
+            <a href="{% url 'teacher_exam_list' center.slug %}" class="text-indigo-600 hover:underline">
+                ← Barcha imtihonlar
+            </a>
+        </div>
+
+        <div class="search-input-wrapper">
+            <input type="text" 
+                   id="searchStudentInput" 
+                   onkeyup="searchStudents()" 
+                   placeholder="Talaba ismi yoki username bo‘yicha qidiruv..." 
+                   title="Talabalarni qidirish">
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full divide-y divide-slate-200" id="results-table">
+                <thead>
+                    <tr class="bg-indigo-100 text-indigo-800">
+                        <th class="px-6 py-4 text-left table-header">Talaba</th>
+                        <th class="px-6 py-4 text-center table-header">Natija</th>
+                        <th class="px-6 py-4 text-center table-header">Urinishlar</th>
+                        <th class="px-6 py-4 text-center table-header">Oxirgi sana</th>
+                        <th class="px-6 py-4 text-center table-header">Batafsil</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for a in latest_attempts %}
+                    
+                    <tr class="table-row-hover student-row" 
+                        data-search-term="{{ a.user_fullname|lower }} {{ a.user_username|lower }}">
+                        
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold">
+                                    {{ a.user_fullname|initials }}
+                                </div>
+                                <div>
+                                    <p class="font-semibold">{{ a.user_fullname }}</p>
+                                    <p class="text-sm text-slate-600">@{{ a.user_username }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="badge {% if exam.is_subject_exam %}{% if a.score_display|get_percentage|gt:'80' %}badge-high{% elif a.score_display|get_percentage|gt:'60' %}badge-med{% else %}badge-low{% endif %}{% else %}badge-sat{% endif %}">
+                                {{ a.score_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <a href="{% url 'exam_attempts' center.slug exam.id %}?student_id={{ a.user.id }}"
+                               class="text-indigo-600 font-bold hover:underline">
+                                {{ a.attempt_count }} marta →
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 text-center text-slate-600">
+                            {{ a.completed_at|date:"d M" }}<br>
+                            <span class="text-xs">{{ a.completed_at|time:"H:i" }}</span>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <a href="{% url 'view_result_detail' center.slug a.attempt_id %}"
+                               class="btn btn-sm btn-indigo bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg px-4 py-2 transition shadow-md">Batafsil</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr id="empty-list-row">
+                        <td colspan="5" class="text-center py-12 text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                            <i class="ti ti-users-off text-5xl mb-3 block mx-auto"></i>
+                            <p class="text-lg">Hali hech bir talaba bu imtihonni ishlamagan.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if latest_attempts %}
+            <table class="w-full mt-2" id="no-results-table" style="display: none;">
+                <tr>
+                    <td colspan="5" class="text-center py-8 text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                        <i class="ti ti-search-off text-4xl mb-2 block mx-auto"></i>
+                        <p class="text-lg">Kiritilgan so‘z bo‘yicha talaba topilmadi.</p>
+                    </td>
+                </tr>
+            </table>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script>
+function searchStudents() {
+    let input, filter, rows, i, row;
+    input = document.getElementById("searchStudentInput");
+    filter = input.value.toUpperCase();
+    rows = document.getElementsByClassName("student-row");
+    
+    if (rows.length === 0) return;
+
+    let visibleRows = 0;
+
+    for (i = 0; i < rows.length; i++) {
+        row = rows[i];
+        
+        // Data atributidan qidiruv matnini olish
+        let searchTerm = row.getAttribute('data-search-term');
+        
+        if (searchTerm) {
+            if (searchTerm.toUpperCase().indexOf(filter) > -1) {
+                row.style.display = ""; // Ko'rsatish
+                visibleRows++;
+            } else {
+                row.style.display = "none"; // Yashirish
+            }
+        }
+    }
+    
+    // Qidiruv natijasi yo'qligini tekshirish
+    checkEmptyResults(visibleRows);
+}
+
+function checkEmptyResults(visibleRows) {
+    let noResultsTable = document.getElementById("no-results-table");
+    let emptyListRow = document.getElementById("empty-list-row"); 
+
+    if (visibleRows === 0 && emptyListRow === null) {
+        // Agar talabalar bor bo'lgan va qidiruv natijasi topilmagan bo'lsa
+        if (noResultsTable) {
+            noResultsTable.style.display = "table";
+        }
+    } else {
+        // Agar natijalar topilgan bo'lsa
+        if (noResultsTable) {
+            noResultsTable.style.display = "none";
+        }
+    }
+}
+</script>
+{% endblock %}

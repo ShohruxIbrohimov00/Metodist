@@ -1,0 +1,343 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ exam.title }} - Imtihon Tafsiloti{% endblock %}
+
+{% block content %}
+<div class="bg-slate-50 min-h-screen">
+    <div class="container mx-auto px-4 py-6 md:py-8">
+        
+        <!-- Orqaga qaytish tugmasi -->
+        <div class="mb-6">
+            <a href="{% url 'all_exams' center.slug %}" class="inline-flex items-center gap-2 text-slate-600 hover:text-indigo-600 transition-colors">
+                <i class="fas fa-arrow-left"></i>
+                <span class="font-medium">Barcha imtihonlarga qaytish</span>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+            
+            <!-- Asosiy ma'lumot - Chap tomon (2 kolonka) -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                    
+                    <!-- Header -->
+                    <div class="relative bg-gradient-to-r from-indigo-500 to-purple-600 p-6 md:p-8 text-white">
+                        {% if exam.is_premium %}
+                            <div class="absolute top-4 right-4 flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                                <i class="fas fa-crown text-yellow-300"></i>
+                                <span class="text-xs font-bold">PREMIUM</span>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-file-alt text-3xl md:text-4xl"></i>
+                            </div>
+                            <div class="flex-grow">
+                                <h1 class="text-2xl md:text-3xl lg:text-4xl font-extrabold mb-2">
+                                    {{ exam.title }}
+                                </h1>
+                                <p class="text-white/90 text-sm md:text-base">
+                                    {{ exam.description|default:"Bu imtihon SAT rasmiy formati asosida tuzilgan." }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ma'lumotlar -->
+                    <div class="p-6 md:p-8 space-y-6">
+                        
+                        <!-- Asosiy ko'rsatkichlar -->
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-info-circle text-indigo-600"></i>
+                                Asosiy Ma'lumotlar
+                            </h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Imtihon turi -->
+                                <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-xl">
+                                    <div class="flex-shrink-0 w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-clipboard-check text-indigo-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-slate-500 font-semibold">IMTIHON TURI</p>
+                                        <p class="text-lg font-bold text-slate-800">
+                                            {% if exam.is_subject_exam %}Mavzu Testi{% else %}SAT Mock{% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Davomiyligi -->
+                                <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-xl">
+                                    <div class="flex-shrink-0 w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-clock text-orange-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-slate-500 font-semibold">DAVOMIYLIGI</p>
+                                        <p class="text-lg font-bold text-slate-800">{{ total_duration|default:0 }} daqiqa</p>
+                                    </div>
+                                </div>
+
+                                <!-- Savollar soni -->
+                                <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-xl">
+                                    <div class="flex-shrink-0 w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-list-ol text-green-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-slate-500 font-semibold">SAVOLLAR SONI</p>
+                                        <p class="text-lg font-bold text-slate-800">{{ total_questions|default:0 }} ta</p>
+                                    </div>
+                                </div>
+
+                                <!-- O'qituvchi -->
+                                <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-xl">
+                                    <div class="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-user-tie text-purple-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-slate-500 font-semibold">O'QITUVCHI</p>
+                                        <p class="text-lg font-bold text-slate-800">
+                                            {{ exam.teacher.get_full_name|default:exam.teacher.username }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bo'limlar -->
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-layer-group text-indigo-600"></i>
+                                Imtihon Bo'limlari
+                            </h2>
+                            <div class="space-y-3">
+                                {% for section in sections %}
+                                <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                                    <div class="flex-shrink-0 w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center text-white">
+                                        {% if section.is_math %}
+                                            <i class="fas fa-calculator text-xl"></i>
+                                        {% else %}
+                                            <i class="fas fa-book-open text-xl"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow">
+                                        <p class="font-bold text-slate-800">{{ section.type_display }}</p>
+                                        <p class="text-sm text-slate-600">
+                                            <span class="font-semibold">{{ section.question_count }}</span> savol · 
+                                            <span class="font-semibold">{{ section.duration_minutes }}</span> daqiqa
+                                        </p>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <span class="px-3 py-1 bg-green-600 text-white text-xs font-bold rounded-full">
+                                            {{ section.question_count }} ta
+                                        </span>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <p class="text-slate-500 text-center py-4">Bo'limlar mavjud emas.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Tugallanmagan urinish ogohlantirish -->
+                        {% if existing_attempt %}
+                        <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-exclamation-triangle text-yellow-600 text-xl mt-1"></i>
+                                <div>
+                                    <p class="font-bold text-yellow-800 mb-1">Tugallanmagan Urinish</p>
+                                    <p class="text-sm text-yellow-700">
+                                        Sizda bu imtihonda tugallanmagan urinish mavjud. Davom ettirish uchun quyidagi tugmani bosing.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Amallar - O'ng tomon (1 kolonka) -->
+            <div class="space-y-6">
+                
+                <!-- Imtihonni boshlash card -->
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                    <div class="bg-gradient-to-r from-emerald-500 to-green-600 p-4 text-white">
+                        <h3 class="font-bold text-lg flex items-center gap-2">
+                            <i class="fas fa-rocket"></i>
+                            Harakatlar
+                        </h3>
+                    </div>
+                    <div class="p-5 space-y-3">
+                        {% if existing_attempt %}
+                            <!-- Davom ettirish -->
+                            <a href="{% url 'exam_view' center.slug exam.id %}" 
+                               class="block w-full btn btn-warning text-center py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all">
+                                <i class="fas fa-play-circle mr-2"></i>
+                                Imtihonni Davom Ettirish
+                            </a>
+                        {% else %}
+                            {% if not can_start_exam %}
+                                <!-- Paket sotib olish -->
+                                <a href="{% url 'price' center.slug %}" 
+                                   class="block w-full btn btn-rose text-center py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all">
+                                    <i class="fas fa-crown mr-2"></i>
+                                    Paket Sotib Olish
+                                </a>
+                            {% else %}
+                                <!-- Testni boshlash -->
+                                <button class="start-exam-btn block w-full btn btn-emerald text-center py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all" 
+                                        data-exam-id="{{ exam.id }}">
+                                    <i class="fas fa-play mr-2"></i>
+                                    Testni Boshlash
+                                </button>
+                            {% endif %}
+                        {% endif %}
+
+                        {% if has_flashcard_exam %}
+                            <!-- Flashcard -->
+                            <a href="{% url 'flashcard_exam_view' center.slug exam.id %}" 
+                               class="block w-full btn btn-sky text-center py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all">
+                                <i class="fas fa-layer-group mr-2"></i>
+                                So'zlarni Yodlash
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Qo'shimcha ma'lumot -->
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-100 p-5">
+                    <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-lightbulb text-yellow-500"></i>
+                        Foydali Maslahatlar
+                    </h3>
+                    <ul class="space-y-3 text-sm text-slate-600">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                            <span>Imtihondan oldin internetingiz barqarorligini tekshiring</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                            <span>Tinch va qulay muhitda test ishlang</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                            <span>Vaqtni to'g'ri taqsimlashni unutmang</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                            <span>Avval oson savollarni bajaring</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Statistika -->
+                <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-xl p-5 text-white">
+                    <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                        <i class="fas fa-chart-bar"></i>
+                        Imtihon Statistikasi
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-white/80">Yaratilgan sana:</span>
+                            <span class="font-bold">{{ exam.created_at|date:"d M, Y" }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-white/80">Holati:</span>
+                            <span class="font-bold">
+                                {% if exam.is_active %}
+                                    <i class="fas fa-check-circle text-green-300"></i> Aktiv
+                                {% else %}
+                                    <i class="fas fa-times-circle text-red-300"></i> Nofaol
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // CSRF token olish
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+    const centerSlug = '{{ center.slug }}';
+
+    // Start Exam tugmasi
+    const startBtn = document.querySelector('.start-exam-btn');
+    if (startBtn) {
+        startBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const examId = startBtn.dataset.examId;
+            
+            if (!examId || !centerSlug) {
+                alert('Ma\'lumot topilmadi.');
+                return;
+            }
+
+            const originalHtml = startBtn.innerHTML;
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Yuklanmoqda...';
+
+            try {
+                const startUrl = `/${centerSlug}/exams/${examId}/start/`;
+                const response = await fetch(startUrl, {
+                    method: 'POST',
+                    headers: { 
+                        'X-CSRFToken': csrftoken, 
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                });
+
+                const text = await response.text();
+                let data = {};
+                
+                try {
+                    if (text) data = JSON.parse(text);
+                } catch(e) {
+                    if (response.ok) {
+                        throw new Error(`Kutilmagan javob formati. Status: ${response.status}`);
+                    }
+                }
+                
+                if (response.ok && data.status === 'success' && data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                    return;
+                } else {
+                    const errorMessage = data.message || 'Server xatosi yuz berdi.';
+                    alert(errorMessage);
+                }
+
+            } catch (error) {
+                console.error('Fetch xatosi:', error);
+                alert('Ulanishda xatolik: ' + error.message);
+            }
+            
+            startBtn.disabled = false;
+            startBtn.innerHTML = originalHtml;
+        });
+    }
+});
+</script>
+{% endblock %}

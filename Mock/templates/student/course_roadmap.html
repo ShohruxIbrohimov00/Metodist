@@ -1,0 +1,543 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ course.title }} | Kurs Tarkibi{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 md:py-16 max-w-7xl">
+
+    {# KURS HEADER #}
+    <header class="bg-white p-6 md:p-12 rounded-3xl shadow-2xl mb-10 border border-indigo-100/50 relative overflow-hidden">
+        <div class="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-indigo-50 rounded-full opacity-30 z-0 hidden lg:block"></div>
+        
+        <div class="z-10 relative">
+            <h1 class="text-3xl md:text-5xl font-extrabold text-gray-900 mb-3 leading-tight">{{ course.title }}</h1>
+            
+            {# PROGRESS BAR #}
+            <div class="mt-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-base text-gray-600 font-medium">Umumiy Progress:</span>
+                    <span class="text-2xl font-bold text-indigo-600">{{ course_progress }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3 shadow-inner">
+                    <div class="bg-gradient-to-r from-indigo-500 to-purple-600 h-3 rounded-full transition-all duration-1000 ease-out" style="width: {{ course_progress }}%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-500 mt-2 font-medium">
+                    <span>Boshlanish</span>
+                    <span>Tugatish</span>
+                </div>
+            </div>
+            
+            {# KURS STATISTIKASI #}
+            <div class="mt-8 flex flex-wrap items-center gap-4 text-gray-600">
+                <span class="flex items-center text-sm font-medium bg-indigo-50 px-3 py-1.5 rounded-lg">
+                    <i class="fas fa-layer-group mr-2 text-indigo-500"></i> {{ total_lessons_count }} ta dars
+                </span>
+                {% if course.is_online %}
+                    <span class="flex items-center text-sm font-medium bg-blue-50 px-3 py-1.5 rounded-lg">
+                        <i class="fas fa-globe mr-2 text-blue-500"></i> 
+                        {% if course.is_scheduled %}Jadval asosida{% else %}Ixtiyoriy tezlik{% endif %}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+    
+    {# KIRISH RAD ETILSA #}
+    {% if not has_access %}
+    <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-5 mb-8 rounded-r-lg shadow-md flex items-start" role="alert">
+        <i class="fas fa-lock text-xl mr-3 mt-1 flex-shrink-0"></i>
+        <div>
+            <p class="font-bold text-lg">Kirish taqiqlangan</p>
+            <p class="text-sm">Siz bu kursga obuna bo'lmagansiz. Davom etish uchun administratorga murojaat qiling.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {# MODULLAR RO'YXATI #}
+    <div class="space-y-6" x-data="roadmapHandler()">
+        {% for module_data in roadmap_data %}
+        
+        <div class="module-card bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-xl"
+             x-data="{ open: $store.roadmap.activeModule === {{ forloop.counter }} }"
+             x-init="if (open) { $el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }">
+            
+            {# MODULE HEADER #}
+            <div class="p-5 md:p-6 cursor-pointer bg-white hover:bg-gray-50 transition duration-200 border-b border-gray-100" 
+                 @click="open = !open; $store.roadmap.activeModule = open ? {{ forloop.counter }} : 0">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-4 flex-grow">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center transition-transform duration-300" 
+                             :class="{ 'rotate-90 bg-indigo-100': open }">
+                            <i class="fas fa-chevron-right text-indigo-600 text-sm"></i>
+                        </div>
+                        <div class="pr-2">
+                            <h2 class="text-lg md:text-xl font-bold text-gray-800 leading-snug">
+                                <span class="text-indigo-500 mr-1">{{ module_data.module.order }}.</span> 
+                                {{ module_data.module.title }}
+                            </h2>
+                        </div>
+                    </div>
+                    
+                    {# MODULE STATISTIKA #}
+                    <div class="flex items-center space-x-6 flex-shrink-0">
+                        <span class="text-sm font-medium text-gray-500 hidden md:inline-block bg-gray-100 px-3 py-1 rounded-full">
+                            {{ module_data.completed_count }} / {{ module_data.total_count }} dars
+                        </span>
+
+                        <div class="flex items-center">
+                            <div class="text-right mr-3 hidden sm:block">
+                                <span class="block text-sm font-bold {% if module_data.progress_perc == 100 %}text-green-600{% else %}text-gray-700{% endif %}">
+                                    {{ module_data.progress_perc }}%
+                                </span>
+                            </div>
+                            <div class="w-16 h-1.5 bg-gray-200 rounded-full hidden sm:block">
+                                <div class="h-1.5 rounded-full {% if module_data.progress_perc == 100 %}bg-green-500{% else %}bg-indigo-500{% endif %}" 
+                                     style="width: {{ module_data.progress_perc }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {# MOBILE PROGRESS #}
+                <div class="w-full bg-gray-100 rounded-full h-1 mt-4 sm:hidden">
+                    <div class="h-1 rounded-full {% if module_data.progress_perc == 100 %}bg-green-500{% else %}bg-indigo-500{% endif %}" 
+                         style="width: {{ module_data.progress_perc }}%"></div>
+                </div>
+            </div>
+            
+            {# MODULE CONTENT - LESSONS #}
+            <div x-show="open" x-collapse.duration.300ms>
+                <ul class="divide-y divide-gray-50">
+                    {% for lesson_data in module_data.lessons %}
+                    {% with lesson=lesson_data.lesson %}
+                    
+                    <li class="lesson-item p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between transition duration-200 
+                        {% if lesson_data.is_locked %}bg-gray-50 opacity-80{% elif lesson_data.finished %}bg-green-50 hover:bg-green-100{% else %}hover:bg-indigo-50/50{% endif %}">
+                        
+                        {# LESSON INFO #}
+                        <div class="flex items-start flex-grow pr-4 mb-3 md:mb-0">
+                            
+                            {# ICON #}
+                            <div class="flex-shrink-0 w-8 mt-0.5 text-center mr-3">
+                                {% if lesson_data.is_locked %}
+                                    <i class="fas fa-lock text-gray-400 text-lg"></i>
+                                {% elif lesson_data.finished %}
+                                    <div class="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto">
+                                        <i class="fas fa-check text-xs"></i>
+                                    </div>
+                                {% elif lesson_data.has_exam %}
+                                    <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mx-auto">
+                                        <i class="fas fa-pencil-alt text-xs"></i>
+                                    </div>
+                                {% elif lesson_data.resources %}
+                                    <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto">
+                                        <i class="fas fa-play text-xs pl-0.5"></i>
+                                    </div>
+                                {% else %}
+                                    <i class="far fa-circle text-gray-300 text-sm"></i> 
+                                {% endif %}
+                            </div>
+
+                            {# LESSON TITLE VA INFO #}
+                            <div class="min-w-0">
+                                <h4 class="text-base font-semibold {% if lesson_data.is_locked %}text-gray-500{% else %}text-gray-800{% endif %} truncate">
+                                    <span class="mr-1">{{ lesson.order }}.</span> 
+                                    {% if not lesson_data.is_locked %}
+                                        <a href="{% url 'lesson_detail' center.slug lesson.id %}" 
+                                           class="hover:underline"
+                                           @click="$store.roadmap.activeModule = {{ forloop.parentloop.counter }}">
+                                            {{ lesson.title }}
+                                        </a>
+                                    {% else %}
+                                        {{ lesson.title }}
+                                    {% endif %}
+                                </h4>
+                                
+                                {# BADGES #}
+                                <div class="flex flex-wrap items-center mt-1 gap-x-4 gap-y-1">
+                                    {% if lesson_data.is_time_locked %}
+                                        <span class="badge-time-locked">
+                                            <i class="far fa-clock mr-1"></i> {{ lesson_data.start_time_str }} da ochiladi
+                                        </span>
+                                    {% elif lesson_data.start_time_str and course.is_scheduled and not lesson_data.is_locked %}
+                                        <span class="badge-scheduled">
+                                            <i class="far fa-calendar-alt mr-1"></i> {{ lesson_data.start_time_str }}
+                                        </span>
+                                    {% endif %}
+
+                                    {% if lesson_data.has_exam and not lesson_data.is_locked %}
+                                        {% if lesson_data.exam_passed %}
+                                            <span class="badge-exam-passed">
+                                                <i class="fas fa-award mr-1"></i> Testdan O'tgan
+                                            </span>
+                                        {% elif lesson_data.exam_completed %}
+                                            <span class="badge-exam-completed">
+                                                <i class="fas fa-redo-alt mr-1"></i> Qayta urinish
+                                            </span>
+                                        {% else %}
+                                            <span class="badge-exam-pending">
+                                                <i class="fas fa-file-alt mr-1"></i> Test talab
+                                            </span>
+                                        {% endif %}
+                                    {% elif lesson_data.resources and not lesson_data.is_locked %}
+                                        {% if lesson_data.all_resources_viewed %}
+                                            <span class="badge-resource-completed">
+                                                <i class="fas fa-check-double mr-1"></i> Resurslar Ko'rildi
+                                            </span>
+                                        {% else %}
+                                            <span class="badge-resource-pending">
+                                                <i class="fas fa-eye mr-1"></i> Ko'rish talab
+                                            </span>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        {# ACTION BUTTONS #}
+                        <div class="flex-shrink-0 flex flex-wrap items-center gap-2 pl-11 md:pl-0 pt-2 md:pt-0">
+                            
+                            {% if lesson_data.is_locked %}
+                                <span class="text-xs font-medium text-gray-400 bg-gray-100 px-3 py-1.5 rounded-xl">
+                                    Oldingi darsni tugating
+                                </span>
+                            {% else %}
+                                
+                                {# RESURS TUGMALARI #}
+                                {% for resource in lesson_data.resources %}
+                                    {% if resource.resource_type == 'video' %}
+                                        <a href="{% url 'lesson_detail' center.slug lesson.id %}?resource={{ resource.id }}" 
+                                           class="resource-btn bg-blue-500"
+                                           @click="$store.roadmap.activeModule = {{ forloop.parentloop.parentloop.counter }}">
+                                            <i class="fas fa-play mr-1.5"></i>Video
+                                        </a>
+                                    {% elif resource.resource_type == 'task' %}
+                                        <a href="{% url 'lesson_detail' center.slug lesson.id %}?resource={{ resource.id }}" 
+                                           class="resource-btn bg-green-500"
+                                           @click="$store.roadmap.activeModule = {{ forloop.parentloop.parentloop.counter }}">
+                                            <i class="fas fa-tasks mr-1.5"></i>Vazifa
+                                        </a>
+                                    {% elif resource.resource_type == 'solution_video' %}
+                                        <a href="{% url 'lesson_detail' center.slug lesson.id %}?resource={{ resource.id }}" 
+                                           class="resource-btn bg-amber-500"
+                                           @click="$store.roadmap.activeModule = {{ forloop.parentloop.parentloop.counter }}">
+                                            <i class="fas fa-laptop-code mr-1.5"></i>Yechim
+                                        </a>
+                                    {% elif resource.resource_type == 'solution_file' %}
+                                        <a href="{% url 'lesson_detail' center.slug lesson.id %}?resource={{ resource.id }}" 
+                                           class="resource-btn bg-red-500"
+                                           @click="$store.roadmap.activeModule = {{ forloop.parentloop.parentloop.counter }}">
+                                            <i class="fas fa-file-download mr-1.5"></i>Fayl
+                                        </a>
+                                    {% elif resource.resource_type == 'other' %}
+                                        <a href="{% url 'lesson_detail' center.slug lesson.id %}?resource={{ resource.id }}" 
+                                           class="resource-btn bg-purple-500"
+                                           @click="$store.roadmap.activeModule = {{ forloop.parentloop.parentloop.counter }}">
+                                            <i class="fas fa-link mr-1.5"></i>Link
+                                        </a>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {# TEST TUGMASI #}
+                                {% if lesson_data.has_exam %}
+                                    <form method="POST" 
+                                          action="{% url 'start_exam' center.slug lesson_data.exam_id %}" 
+                                          class="inline-block exam-start-form"
+                                          data-module="{{ forloop.parentloop.counter }}">
+                                        {% csrf_token %}
+                                        {% if lesson_data.exam_passed %}
+                                            <button type="submit" class="exam-btn-primary bg-emerald-600">
+                                                <i class="fas fa-redo-alt mr-1.5"></i> Qayta ishlash
+                                            </button>
+                                        {% elif lesson_data.exam_completed %}
+                                            <button type="submit" class="exam-btn-primary bg-orange-600">
+                                                <i class="fas fa-redo mr-1.5"></i> Qayta urinish
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" class="exam-btn-primary bg-indigo-600">
+                                                <i class="fas fa-pencil-alt mr-1.5"></i> Testni boshlash
+                                            </button>
+                                        {% endif %}
+                                    </form>
+                                {% endif %}
+
+                                {% if not lesson_data.resources and not lesson_data.has_exam and not lesson_data.finished %}
+                                    <span class="text-xs text-gray-400 italic">Materiallar yo'q</span>
+                                {% endif %}
+                            
+                            {% endif %}
+                        </div>
+                    </li>
+                    {% endwith %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-20 border-2 border-dashed border-gray-300 rounded-3xl bg-gray-50 text-gray-500">
+            <i class="fas fa-box-open mb-4 text-5xl text-indigo-400"></i>
+            <p class="text-xl font-semibold text-gray-600">Bu kursda hali modullar yoki darslar mavjud emas.</p>
+            <p class="text-sm mt-2">Keyinroq qaytib ko'ring.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    /* BADGE STYLES */
+    .badge-time-locked { 
+        display: inline-flex;
+        align-items: center;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+    .badge-scheduled { 
+        display: inline-flex;
+        align-items: center;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+    .badge-exam-passed { 
+        display: inline-flex;
+        align-items: center;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+    .badge-exam-completed { 
+        display: inline-flex;
+        align-items: center;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background-color: #fed7aa;
+        color: #92400e;
+    }
+    .badge-exam-pending { 
+        display: inline-flex;
+        align-items: center;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background-color: #e0e7ff;
+        color: #3730a3;
+    }
+    .badge-resource-completed { 
+        display: inline-flex;
+        align-items: center;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background-color: #cffafe;
+        color: #155e75;
+    }
+    .badge-resource-pending { 
+        display: inline-flex;
+        align-items: center;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+
+    /* RESOURCE BUTTONS */
+    .resource-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        padding: 8px 16px !important;
+        border-radius: 12px !important;
+        white-space: nowrap !important;
+        color: white !important;
+        text-decoration: none !important;
+        transition: all 0.25s ease !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
+        border: none !important;
+        line-height: 1 !important;
+    }
+    .resource-btn:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.2) !important;
+        opacity: 0.95 !important;
+    }
+    
+    .resource-btn.bg-blue-500 { background-color: #3b82f6 !important; }
+    .resource-btn.bg-green-500 { background-color: #22c55e !important; }
+    .resource-btn.bg-amber-500 { background-color: #f59e0b !important; }
+    .resource-btn.bg-red-500 { background-color: #ef4444 !important; }
+    .resource-btn.bg-purple-500 { background-color: #a855f7 !important; }
+
+    /* EXAM BUTTONS */
+    .exam-btn-primary {
+        display: inline-flex !important;
+        align-items: center !important;
+        font-size: 16px !important;
+        font-weight: 700 !important;
+        padding: 14px 28px !important;
+        border-radius: 16px !important;
+        cursor: pointer !important;
+        white-space: nowrap !important;
+        color: white !important;
+        text-decoration: none !important;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+        border: none !important;
+        text-shadow: 0 1px 1px rgba(0,0,0,0.1) !important;
+    }
+    .exam-btn-primary:hover {
+        transform: translateY(-4px) !important;
+    }
+    
+    .exam-btn-primary.bg-indigo-600 {
+        background-color: #4f46e5 !important;
+        box-shadow: 0 6px 15px rgba(79, 70, 229, 0.4), 0 12px 25px rgba(79, 70, 229, 0.2) !important;
+    }
+    .exam-btn-primary.bg-indigo-600:hover {
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.6), 0 15px 35px rgba(79, 70, 229, 0.3) !important;
+    }
+    
+    .exam-btn-primary.bg-orange-600 { 
+        background-color: #ea580c !important;
+        box-shadow: 0 6px 15px rgba(234, 88, 12, 0.4), 0 12px 25px rgba(234, 88, 12, 0.2) !important;
+    }
+    .exam-btn-primary.bg-orange-600:hover {
+        box-shadow: 0 10px 20px rgba(234, 88, 12, 0.6), 0 15px 35px rgba(234, 88, 12, 0.3) !important;
+    }
+    
+    .exam-btn-primary.bg-emerald-600 { 
+        background-color: #059669 !important;
+        box-shadow: 0 6px 15px rgba(5, 150, 105, 0.4), 0 12px 25px rgba(5, 150, 105, 0.2) !important;
+    }
+    .exam-btn-primary.bg-emerald-600:hover {
+        box-shadow: 0 10px 20px rgba(5, 150, 105, 0.6), 0 15px 35px rgba(5, 150, 105, 0.3) !important;
+    }
+
+    [x-cloak] { display: none !important; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js" defer></script>
+
+<script>
+    // ALPINE JS STORE - Modul holatini saqlash
+    document.addEventListener('alpine:init', () => {
+        Alpine.store('roadmap', {
+            activeModule: parseInt(localStorage.getItem('activeModule')) || 1,
+            
+            setActive(moduleNum) {
+                this.activeModule = moduleNum;
+                localStorage.setItem('activeModule', moduleNum);
+            }
+        });
+    });
+    
+    // ROADMAP HANDLER COMPONENT
+    function roadmapHandler() {
+        return {
+            init() {
+                // Sahifa yuklanganida localStorage'dan modulni tiklash
+                const savedModule = localStorage.getItem('activeModule');
+                if (savedModule) {
+                    this.$store.roadmap.activeModule = parseInt(savedModule);
+                }
+            }
+        };
+    }
+
+    // EXAM FORM HANDLER
+    document.addEventListener('DOMContentLoaded', () => {
+        const examForms = document.querySelectorAll('.exam-start-form');
+
+        examForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Modulni saqlash
+                const moduleNum = this.getAttribute('data-module');
+                if (moduleNum) {
+                    localStorage.setItem('activeModule', moduleNum);
+                }
+                
+                const currentLessonElement = this.closest('.lesson-item');
+                if (currentLessonElement && currentLessonElement.classList.contains('opacity-80')) {
+                    return;
+                }
+
+                const button = form.querySelector('button[type="submit"]');
+                const originalContent = button.innerHTML;
+                const currentUrl = window.location.pathname;
+                
+                const actionUrl = form.action.includes('?') 
+                    ? form.action + '&next=' + encodeURIComponent(currentUrl)
+                    : form.action + '?next=' + encodeURIComponent(currentUrl);
+                
+                button.disabled = true;
+                button.classList.add('opacity-75', 'cursor-wait');
+                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-1.5"></i> Yuklanmoqda...';
+
+                fetch(actionUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': form.querySelector('input[name="csrfmiddlewaretoken"]').value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                        return;
+                    }
+                    
+                    if (!response.ok) {
+                        return response.json().then(error => { 
+                            throw new Error(error.message || `HTTP xato: ${response.status}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success' && data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    } else if (data.status === 'error') {
+                        console.error('Imtihonni boshlashda xato:', data.message);
+                        alert("Xatolik: " + (data.message || 'Noma\'lum xatolik yuz berdi.'));
+
+                        button.disabled = false;
+                        button.classList.remove('opacity-75', 'cursor-wait');
+                        button.innerHTML = originalContent;
+                    } else {
+                        throw new Error('Serverdan noto\'g\'ri formatdagi javob keldi.');
+                    }
+                })
+                .catch(error => {
+                    console.error('AJAX XATOSI:', error);
+                    alert("Tarmoq xatosi: " + error.message);
+                    
+                    button.disabled = false;
+                    button.classList.remove('opacity-75', 'cursor-wait');
+                    button.innerHTML = originalContent;
+                });
+            });
+        });
+    });
+</script>
+{% endblock extra_js %}

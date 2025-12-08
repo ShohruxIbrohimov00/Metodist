@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static i18n humanize %}
+
+{% block title %}To‘lovlarni tekshirish{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 py-12 px-4">
+    <div class="max-w-7xl mx-auto">
+        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <div class="bg-gradient-to-r from-emerald-500 to-teal-600 px-8 py-6 text-white">
+                <h1 class="text-3xl font-black">To‘lovlarni tasdiqlash</h1>
+                <p class="opacity-90 mt-2">Foydalanuvchilar yuklagan skrinshotlarni tekshiring va tasdiqlang</p>
+            </div>
+
+            <div class="p-8">
+                {% if purchases %}
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left text-sm font-bold text-slate-600 border-b-2 border-emerald-100">
+                                <th class="pb-4">#</th>
+                                <th class="pb-4">Foydalanuvchi</th>
+                                <th class="pb-4">Turi</th>
+                                <th class="pb-4">Mahsulot</th>
+                                <th class="pb-4">Summa</th>
+                                <th class="pb-4">Sana</th>
+                                <th class="pb-4">Skриншот</th>
+                                <th class="pb-4">Holati</th>
+                                <th class="pb-4 text-center">Amallar</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for p in purchases %}
+                            <tr class="hover:bg-emerald-50 transition">
+                                <td class="py-5 font-bold text-slate-700">#{{ p.id }}</td>
+                                <td>
+                                    <div>
+                                        {% if p.user.profile_picture %}
+                                            <img src="{{ p.user.profile_picture.url }}" class="w-10 h-10 rounded-full inline">
+                                        {% else %}
+                                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 inline-flex items-center justify-center text-white font-bold">
+                                                {{ p.user.username|first|upper }}
+                                            </div>
+                                        {% endif %}
+                                        <span class="ml-3 font-semibold">{{ p.user.get_full_name|default:p.user.username }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if p.purchase_type == 'package' %}
+                                        <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold">PAKET</span>
+                                    {% else %}
+                                        <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold">OBUNA</span>
+                                    {% endif %}
+                                </td>
+                                <td class="font-medium">
+                                    {% if p.course %}
+                                        <span class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold">KURS</span>
+                                        <span class="ml-1">{{ p.course.title }}</span>
+                                    {% elif p.package %}
+                                        {{ p.package.name }}
+                                    {% elif p.subscription_plan %}
+                                        {{ p.subscription_plan.name }}
+                                    {% endif %}
+                                </td>
+                                <td class="font-bold text-emerald-600">
+                                    {{ p.final_amount|intcomma }} so‘m
+                                    {% if p.promo_code %}<span class="text-xs text-green-600">(chegirma)</span>{% endif %}
+                                </td>
+                                <td class="text-xs text-slate-500">
+                                    {{ p.created_at|date:"d.m.Y H:i" }}
+                                </td>
+                                <td>
+                                    {% if p.payment_screenshot %}
+                                        <a href="{{ p.payment_screenshot.url }}" target="_blank" class="text-emerald-600 hover:underline font-medium">
+                                            Ko‘rish
+                                        </a>
+                                    {% else %}
+                                        <span class="text-slate-400">Yo‘q</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if p.status == 'pending' %}
+                                        <span class="px-4 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-bold">Kutilmoqda</span>
+                                    {% elif p.status == 'moderation' %}
+                                        <span class="px-4 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">Tekshirilmoqda</span>
+                                    {% elif p.status == 'completed' %}
+                                        <span class="px-4 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">Tasdiqlangan</span>
+                                    {% elif p.status == 'rejected' %}
+                                        <span class="px-4 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-bold">Rad etilgan</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if p.status == 'pending' or p.status == 'moderation' %}
+                                    <div class="flex gap-2 justify-center">
+                                        <!-- Tasdiqlash tugmasi -->
+                                        <form method="post" action="{% url 'approve_payment' center.slug p.pk %}" class="inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-sm transition">
+                                                Tasdiqlash
+                                            </button>
+                                        </form>
+                                        
+                                        <!-- Rad etish tugmasi -->
+                                        <form method="post" action="{% url 'reject_payment' center.slug p.pk %}" class="inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="px-5 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold text-sm transition"
+                                                    onclick="return confirm('Rostdan ham rad etmoqchimisiz?')">
+                                                Rad etish
+                                            </button>
+                                        </form>
+                                    </div>
+                                    {% else %}
+                                        <span class="text-slate-400 text-sm">Yakunlangan</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% else %}
+                <div class="text-center py-16">
+                    <div class="text-6xl mb-4">To‘lov topilmadi</div>
+                    <p class="text-slate-500">Hozircha hech kim to‘lov yuklamagan</p>
+                </div>
+                {% endif %}
+
+                {% if is_paginated %}
+                <div class="mt-10 flex justify-center gap-3">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 bg-white border border-emerald-200 rounded-xl hover:bg-emerald-50 transition">Oldingi</a>
+                    {% endif %}
+                    <span class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-xl font-bold">
+                        {{ page_obj.number }} / {{ paginator.num_pages }}
+                    </span>
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl transition">Keyingi</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

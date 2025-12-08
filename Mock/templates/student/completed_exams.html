@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Natijalar Arxivi{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 py-8 px-4">
+    <div class="max-w-7xl mx-auto">
+
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-800 mb-4">
+                <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    Natijalar Arxivi
+                </span>
+            </h1>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+                Sizning barcha yakunlangan sinovlaringiz va ularning natijalari.
+            </p>
+        </div>
+
+        <div class="mt-8 max-w-2xl mx-auto mb-12">
+            <div class="relative">
+                <input type="text" id="exam-search-input" placeholder="Imtihon nomini qidiring..."
+                       class="w-full pl-5 pr-12 py-4 text-lg border-2 border-slate-200 rounded-2xl
+                              focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 transition shadow-sm">
+                <i class="fa-solid fa-search absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 text-xl"></i>
+            </div>
+        </div>
+
+        {% if not top_results and not recent_results %}
+            <div class="text-center py-20">
+                <div class="bg-white/70 backdrop-blur rounded-3xl p-12 max-w-lg mx-auto shadow-2xl border border-slate-100">
+                    <i class="fas fa-box-open text-8xl text-slate-300 mb-8"></i>
+                    <h3 class="text-3xl font-extrabold text-slate-700 mb-4">Tugatilgan Imtihonlar Yo‘q</h3>
+                    <p class="text-lg text-slate-500 mb-8">Imtihon topshirib, o‘z bilimingizni sinab ko‘ring!</p>
+                    <a href="{% url 'all_exams' center.slug %}"
+                       class="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 
+                              text-white font-bold text-lg rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 active:scale-95">
+                        <i class="fas fa-arrow-right"></i>
+                        Imtihonlarga O‘tish
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            {% if top_results %}
+            <section class="exam-section mb-16">
+                <div class="flex items-center gap-4 mb-6 px-4 md:px-0">
+                    <h2 class="text-3xl font-extrabold text-slate-800">Eng Yuqori</h2>
+                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold 
+                                 bg-gradient-to-r from-yellow-100 to-amber-100 text-amber-800 border border-amber-200">
+                        <i class="fas fa-trophy mr-2"></i> {{ top_results|length }} ta
+                    </span>
+                </div>
+                <div class="horizontal-scroll flex gap-6 pb-6 -mb-6 items-start overflow-x-auto 
+                            whitespace-nowrap mx-[-1rem] md:mx-0 px-4 md:px-0">
+                    {% for result in top_results %}
+                        {% include 'partials/completed_exam_card.html' with result=result center=center %}
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            {% if recent_results %}
+            <section class="exam-section mb-16">
+                <div class="flex items-center gap-4 mb-6 px-4 md:px-0">
+                    <h2 class="text-3xl font-extrabold text-slate-800">Oxirgi</h2>
+                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold 
+                                 bg-gradient-to-r from-emerald-100 to-teal-100 text-teal-800 border border-teal-200">
+                        <i class="fas fa-clock mr-2"></i> {{ recent_results|length }} ta
+                    </span>
+                </div>
+                <div class="horizontal-scroll flex gap-6 pb-6 -mb-6 items-start overflow-x-auto 
+                            whitespace-nowrap mx-[-1rem] md:mx-0 px-4 md:px-0">
+                    {% for result in recent_results %}
+                        {% include 'partials/completed_exam_card.html' with result=result center=center %}
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            <div id="no-search-results" class="hidden text-center py-20">
+                <div class="bg-white/70 backdrop-blur rounded-3xl p-12 max-w-md mx-auto shadow-xl border border-slate-100">
+                    <i class="fas fa-search text-7xl text-slate-300 mb-6"></i>
+                    <h3 class="text-2xl font-bold text-slate-700 mb-3">Hech narsa topilmadi</h3>
+                    <p class="text-slate-500">Boshqa kalit so‘z bilan qidiring.</p>
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || "{{ csrf_token }}";
+    const centerSlug = "{{ center.slug|escapejs }}";
+
+    const searchInput = document.getElementById('exam-search-input');
+    const noResultsDiv = document.getElementById('no-search-results');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            const query = this.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            // Har bir card ni topamiz
+            document.querySelectorAll('.exam-card-wrapper').forEach(card => {
+                const title = card.querySelector('h3')?.textContent || '';
+                if (title.toLowerCase().includes(query)) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Bo‘limlarni yashirish/ko‘rsatish
+            document.querySelectorAll('.exam-section').forEach(section => {
+                const hasVisibleCards = section.querySelector('.exam-card-wrapper[style=""]') || 
+                                      section.querySelector('.exam-card-wrapper:not([style*="display: none"])');
+                section.style.display = hasVisibleCards ? '' : 'none';
+            });
+
+            // "Hech narsa topilmadi" xabari
+            if (noResultsDiv) {
+                noResultsDiv.style.display = (query !== '' && visibleCount === 0) ? 'block' : 'none';
+            }
+        });
+    }
+    
+    // === "Ishlash" tugmasi – AJAX orqali to‘g‘ri ishlaydi ===
+    document.querySelectorAll('.start-exam-btn').forEach(btn => {
+        btn.addEventListener('click', async function (e) {
+            e.preventDefault();
+            const examId = this.dataset.examId;
+            if (!examId) return alert('Imtihon ID topilmadi!');
+
+            const textSpan = this.querySelector('.btn-text');
+            const spinner = this.querySelector('i.fa-spinner');
+            const originalText = textSpan.textContent;
+
+            this.disabled = true;
+            textSpan.textContent = 'Yuklanmoqda...';
+            spinner.classList.remove('hidden');
+
+            try {
+                const resp = await fetch(`/${centerSlug}/exams/${examId}/start/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({})
+                });
+
+                const data = await resp.json();
+
+                if (resp.ok && data.status === 'success' && data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    alert(data.message || 'Xatolik yuz berdi. Qayta urining.');
+                    this.disabled = false;
+                    textSpan.textContent = originalText;
+                    spinner.classList.add('hidden');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Internet yoki server bilan muammo bor.');
+                this.disabled = false;
+                textSpan.textContent = originalText;
+                spinner.classList.add('hidden');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

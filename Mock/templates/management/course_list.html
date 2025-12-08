@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block title %}Kurslar ro'yxati{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+.course-card { transition: all 0.3s ease; }
+.course-card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+
+#searchCourseInput {
+    width: 100% !important;
+    padding-left: 3rem !important;
+    padding-right: 1.25rem !important;
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+    border: 1px solid rgb(203 213 225) !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05) !important;
+    color: rgb(71 85 105) !important;
+    font-size: 1rem !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='h-6 w-6 text-slate-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: left 12px center !important;
+    background-size: 20px !important;
+    background-color: white !important;
+    transition: all 0.2s ease-in-out !important;
+    outline: none !important;
+}
+#searchCourseInput:focus {
+    border-color: #4f46e5 !important;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2) !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8 max-w-6xl">
+    <div class="bg-white shadow-xl rounded-xl p-6 md:p-8 border border-gray-100">
+
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-4 sm:space-y-0">
+            <h2 class="text-3xl font-extrabold text-gray-900">Kurslarni boshqarish</h2>
+            <a href="{% url 'course_create' slug=center.slug %}" class="btn btn-primary">
+                <i class="fas fa-plus mr-2"></i>Yangi kurs qo'shish
+            </a>
+        </div>
+
+        <!-- 🔍 REAL-TIME QIDIRUV -->
+        <div class="w-full mb-6">
+            <input type="text" id="searchCourseInput" placeholder="Kurs nomi, ustoz yoki turi bo‘yicha qidiruv..." title="Kursni qidirish">
+        </div>
+
+        {% if courses %}
+        <div class="grid grid-cols-1 gap-6" id="courses-grid">
+            {% for course in courses %}
+            <div class="course-card" data-search-term="{{ course.title|lower }} {{ course.teacher.get_full_name|lower }} {{ course.get_course_type_display|lower }}">
+                <div class="bg-gray-50 rounded-lg p-6 border border-gray-200 shadow-sm flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-indigo-700">{{ course.title }}</h3>
+                        <p class="text-sm text-gray-600 mt-1">
+                            Ustoz: <b>{{ course.teacher.get_full_name|default:"Tayinlanmagan" }}</b> | 
+                            Turi: <span class="font-semibold">{{ course.get_course_type_display }}</span>
+                        </p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <a href="{% url 'course_groups' course_id=course.id %}" class="btn-icon text-purple-600 hover:bg-purple-100">
+                            <i class="fas fa-users"></i>
+                        </a>
+                        <a href="{% url 'module_list' course_id=course.id %}" class="btn-icon text-indigo-600 hover:bg-indigo-100">
+                            <i class="fas fa-cubes"></i>
+                        </a>
+                        <a href="{% url 'course_update' slug=center.slug pk=course.id %}" class="btn-icon text-blue-600 hover:bg-blue-100">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button onclick="openDeleteModal('delete-modal-{{ course.id }}')" class="btn-icon text-red-600 hover:bg-red-100">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-center py-12 text-gray-500">Hozircha kurslar mavjud emas.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script>
+$('#searchCourseInput').on('keyup', function() {
+    let filter = $(this).val().toLowerCase();
+    $('#courses-grid .course-card').each(function() {
+        let term = $(this).data('search-term');
+        if(term.includes(filter)) $(this).show();
+        else $(this).hide();
+    });
+
+    // Agar natija yo'q bo'lsa
+    if($('#courses-grid .course-card:visible').length === 0) {
+        if(!$('#no-results').length) {
+            $('#courses-grid').append('<p id="no-results" class="text-center py-8 text-gray-400">Kiritilgan so‘z bo‘yicha kurs topilmadi.</p>');
+        }
+    } else {
+        $('#no-results').remove();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,172 @@
+<!-- student/answer_detail_partial.html — MOBIL UCHUN MUKAMMAL OPTIMIZED -->
+<div class="max-w-full p-3 sm:p-6 rounded-xl sm:rounded-2xl shadow-xl border-2
+    {% if user_answer.is_correct %} border-green-400 bg-green-50/80
+    {% elif user_answer.is_correct is None %} border-yellow-400 bg-yellow-50/80
+    {% else %} border-red-400 bg-red-50/80 {% endif %}">
+
+    <!-- SARLAVHA + NATIJA -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-3 mb-4 sm:mb-5 pb-3 sm:pb-4 border-b-2 border-slate-200">
+        <h3 class="text-base sm:text-lg md:text-xl font-extrabold text-slate-800">Savol Tahlili</h3>
+        <span class="text-xs sm:text-sm font-bold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-md whitespace-nowrap
+            {% if user_answer.is_correct %} bg-green-600 text-white
+            {% elif user_answer.is_correct is None %} bg-yellow-500 text-slate-800
+            {% else %} bg-red-600 text-white {% endif %}">
+            {% if user_answer.is_correct %}TO'G'RI
+            {% elif user_answer.is_correct is None %}O'TKAZILGAN
+            {% else %}NOTO'G'RI{% endif %}
+        </span>
+    </div>
+
+    <!-- SAVOL MATNI -->
+    <div class="text-slate-800 text-sm sm:text-base md:text-lg leading-relaxed mb-4 sm:mb-5 p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl border border-slate-200 tex2jax_process break-words overflow-x-auto">
+        {{ question.text|safe }}
+        {% if question.image %}
+            <img src="{{ question.image.url }}" alt="Savol rasmi" class="mt-3 sm:mt-4 rounded-lg max-w-full h-auto shadow-md mx-auto block">
+        {% endif %}
+    </div>
+
+    <!-- PASSAGE -->
+    {% if question.passage %}
+    <div class="mb-4 sm:mb-6 p-3 sm:p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-indigo-500 rounded-r-lg sm:rounded-r-xl overflow-x-auto">
+        <p class="font-bold text-indigo-800 text-xs sm:text-sm md:text-base mb-2">Matn (Passage):</p>
+        <div class="text-slate-700 text-xs sm:text-sm md:text-base leading-relaxed tex2jax_process prose prose-sm sm:prose break-words">
+            {{ question.passage.text|safe }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- JAVOB VARIANTLARI -->
+    {% if question.answer_format != 'short_answer' %}
+    <div class="space-y-2 sm:space-y-3">
+        {% for item in options_with_status %}
+        <div class="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all text-xs sm:text-sm md:text-base
+            {% if item.is_user_selected and item.is_correct %} bg-blue-100 border-blue-500 shadow-lg ring-2 ring-blue-400
+            {% elif not item.is_user_selected and item.is_correct %} bg-green-100 border-green-500 shadow-lg ring-2 ring-green-400
+            {% elif item.is_user_selected and not item.is_correct %} bg-red-100 border-red-500 shadow-lg ring-2 ring-red-400
+            {% else %} bg-gray-50 border-slate-300 hover:bg-gray-100 {% endif %}">
+
+            <!-- Belgilar -->
+            <div class="flex-shrink-0 mt-0.5">
+                {% if item.is_user_selected and item.is_correct %}
+                    <i class="fas fa-check-double text-lg sm:text-xl md:text-2xl text-blue-600"></i>
+                {% elif item.is_user_selected and not item.is_correct %}
+                    <i class="fas fa-times-circle text-lg sm:text-xl md:text-2xl text-red-600"></i>
+                {% elif not item.is_user_selected and item.is_correct %}
+                    <i class="fas fa-check-circle text-lg sm:text-xl md:text-2xl text-green-600"></i>
+                {% else %}
+                    <i class="far fa-circle text-lg sm:text-xl md:text-2xl text-slate-400"></i>
+                {% endif %}
+            </div>
+
+            <!-- Variant matni -->
+            <div class="flex-1 min-w-0 break-words overflow-x-auto">
+                <span class="font-bold text-slate-700 mr-1 sm:mr-2">{{ item.letter }}.</span>
+                <span class="text-slate-800 tex2jax_process">{{ item.option.text|safe }}</span>
+            </div>
+
+            <!-- Status badge -->
+            <div class="flex-shrink-0">
+                {% if item.is_user_selected and item.is_correct %}
+                    <span class="text-xs font-bold text-blue-600 bg-blue-200 px-2 py-1 rounded-full whitespace-nowrap">Tanladingiz</span>
+                {% elif item.is_user_selected and not item.is_correct %}
+                    <span class="text-xs font-bold text-red-600 bg-red-200 px-2 py-1 rounded-full">Xato</span>
+                {% elif not item.is_user_selected and item.is_correct %}
+                    <span class="text-xs font-bold text-green-600 bg-green-200 px-2 py-1 rounded-full">To'g'ri</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- SHORT ANSWER -->
+    <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-4 sm:p-5 rounded-lg sm:rounded-xl border-2 border-amber-400">
+        <p class="font-bold text-amber-800 text-xs sm:text-sm md:text-base mb-2 sm:mb-3">Sizning javobingiz:</p>
+        <div class="bg-white p-3 sm:p-4 rounded-lg border-2 border-amber-300 font-mono text-sm sm:text-base md:text-lg break-all overflow-x-auto">
+            "{{ user_answer.short_answer_text|default:"(javob yo'q)" }}"
+        </div>
+        {% if user_answer.is_correct %}
+            <p class="mt-3 sm:mt-4 text-green-600 font-bold text-base sm:text-lg md:text-xl text-center">
+                <i class="fas fa-check-circle mr-1 sm:mr-2"></i> To'g'ri javob!
+            </p>
+        {% else %}
+            <p class="mt-3 sm:mt-4 text-red-600 font-bold text-base sm:text-lg md:text-xl text-center">
+                <i class="fas fa-times-circle mr-1 sm:mr-2"></i> Xato javob
+            </p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- YECHIM QISMI -->
+    <div class="mt-4 sm:mt-6 pt-4 sm:pt-5 border-t-2 border-slate-300">
+        {% if allow_solution_display %}
+            <!-- YECHIM OCHIQ -->
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 border-indigo-300 shadow-inner">
+                <h4 class="text-base sm:text-lg md:text-xl font-bold text-indigo-800 mb-3 sm:mb-4 flex items-center gap-2">
+                    <i class="fas fa-lightbulb text-yellow-500"></i> To'liq tushuntirish
+                </h4>
+                <div class="text-slate-700 text-xs sm:text-sm md:text-base leading-relaxed tex2jax_process prose prose-sm sm:prose break-words overflow-x-auto max-w-full">
+                    {% if question.solution.detailed_solution %}
+                        {{ question.solution.detailed_solution|safe }}
+                    {% elif question.solution %}
+                        {{ question.solution|safe }}
+                    {% else %}
+                        <p class="italic text-slate-500">Tushuntirish mavjud emas.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+        {% elif can_unlock_with_credit %}
+            <!-- KREDIT BILAN OCHISH -->
+            <div class="bg-gradient-to-br from-amber-50 to-orange-100 p-4 sm:p-6 rounded-xl sm:rounded-2xl border-2 border-amber-400 shadow-lg text-center">
+                <i class="fas fa-lock-open text-3xl sm:text-4xl text-amber-600 mb-3 sm:mb-4"></i>
+                <p class="text-base sm:text-lg md:text-xl font-bold text-amber-900 mb-2 sm:mb-3">
+                    Yechim kredit bilan ochiladi
+                </p>
+                <p class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-orange-600 mb-3 sm:mb-4">
+                    {{ question.solution_cost }} <i class="fas fa-coins ml-1"></i>
+                </p>
+
+                {% if user_balance.solution_view_credits >= question.solution_cost %}
+                    <!-- Kredit yetarli -->
+                    <button onclick="unlockSolution({{ question.id }}, {{ question.solution_cost }})"
+                            class="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-base sm:text-lg rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all">
+                        <i class="fas fa-unlock mr-2"></i> Yechimni ochish
+                    </button>
+                    <p class="mt-3 text-xs sm:text-sm text-slate-600">
+                        Sizda: <strong class="text-green-600">{{ user_balance.solution_view_credits }}</strong> kredit bor
+                    </p>
+                {% else %}
+                    <!-- Kredit yetarli emas -->
+                    <div class="p-4 sm:p-5 bg-red-100 border-2 border-red-400 rounded-lg sm:rounded-xl">
+                        <p class="text-red-800 font-bold text-base sm:text-lg">
+                            <i class="fas fa-exclamation-triangle mr-2"></i> Kredit yetarli emas!
+                        </p>
+                        <p class="text-xs sm:text-sm text-slate-700 mt-2">
+                            Sizda: <strong>{{ user_balance.solution_view_credits }}</strong> • Kerak: <strong>{{ question.solution_cost }}</strong>
+                        </p>
+                        <a href="{% url 'packages' %}" class="mt-3 sm:mt-4 inline-block w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white font-bold text-sm sm:text-base rounded-full hover:bg-indigo-700 transition-all">
+                            Kredit sotib olish
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+        {% else %}
+            <!-- YECHIM YOPIQ -->
+            <div class="p-4 sm:p-6 bg-gradient-to-br from-red-50 to-rose-50 border-2 border-red-400 rounded-xl sm:rounded-2xl text-center shadow-lg">
+                <i class="fas fa-lock text-3xl sm:text-4xl md:text-5xl text-red-600 mb-3"></i>
+                <p class="text-base sm:text-lg md:text-2xl font-bold text-red-800">Yechim yopiq</p>
+                <p class="mt-2 sm:mt-3 text-xs sm:text-sm md:text-base text-red-700 leading-relaxed">
+                    Kamida <strong>60%</strong> to'g'ri javob kerak
+                </p>
+                <p class="mt-2 sm:mt-3 text-base sm:text-lg font-bold">
+                    Siz: <span class="text-red-600">{{ total_percentage }}%</span>
+                </p>
+                <p class="mt-3 sm:mt-4 text-xs sm:text-sm text-slate-600 italic">
+                    Yana urinib ko'ring!
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>

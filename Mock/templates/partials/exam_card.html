@@ -1,0 +1,160 @@
+{% load static %}
+{% with exam=exam_data.obj %}
+
+<div class="exam-card group"
+     data-type="{% if exam.is_subject_exam %}topic{% else %}mock{% endif %}"
+     data-price="{% if exam.is_premium %}premium{% else %}free{% endif %}"
+     data-created-at="{{ exam.created_at|date:'Y-m-d' }}">
+
+    <!-- QATTIY O‘LCHAM: 300x460px -->
+    <div class="relative bg-white rounded-xl shadow-lg border border-slate-100 
+                overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-indigo-100
+                w-[300px] h-[460px] flex flex-col">
+
+        <!-- Premium badge -->
+        {% if exam.is_premium %}
+            <div class="absolute top-3 right-3 z-10">
+                <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg ring-2 ring-white/70">
+                    <i class="fas fa-crown text-yellow-300 text-xs"></i>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Sarlavha -->
+        <div class="px-4 pt-4 pb-2 flex-shrink-0">
+            <div class="flex items-center justify-between mb-2">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold
+                             {% if not exam.is_subject_exam %}bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700
+                             {% else %}bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700{% endif %}">
+                    <i class="fas {% if not exam.is_subject_exam %}fa-file-alt{% else %}fa-book{% endif %} text-[10px]"></i>
+                    {% if not exam.is_subject_exam %}Mock{% else %}Mavzu{% endif %}
+                </span>
+                {% if exam_data.is_new %}
+                <span class="px-2 py-0.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[10px] font-bold rounded-full">YANGI</span>
+                {% endif %}
+            </div>
+            <h3 class="text-lg font-extrabold text-slate-800 leading-snug line-clamp-2 group-hover:text-indigo-600 transition-colors">
+                {{ exam.title }}
+            </h3>
+        </div>
+
+        <!-- Tavsif -->
+        <div class="px-4 pb-3 flex-shrink-0">
+            <p class="text-[11px] text-slate-600 leading-snug line-clamp-3 italic">
+                {{ exam.description|default:"Yuqori sifatli SAT tayyorgarlik imtihoni."|truncatechars:300 }}
+            </p>
+        </div>
+
+        <!-- MARKAZIY QISM – HAR DOIM BIR XIL JOYLASHUV -->
+        <div class="px-4 flex-1 flex flex-col justify-between">
+            <div class="space-y-2.5 text-xs">
+
+                <!-- Muallif -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 bg-indigo-100 rounded-md flex items-center justify-center">
+                            <i class="fas fa-user-graduate text-indigo-600 text-xs"></i>
+                        </div>
+                        <span class="text-slate-500">Muallif</span>
+                    </div>
+                    <p class="font-bold text-slate-800 text-sm text-right">
+                        {{ exam.teacher.get_full_name|default:exam.teacher.username }}
+                    </p>
+                </div>
+
+                <!-- Vaqt -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 bg-emerald-100 rounded-md flex items-center justify-center">
+                            <i class="fas fa-clock text-emerald-600 text-xs"></i>
+                        </div>
+                        <span class="text-slate-500">Vaqt</span>
+                    </div>
+                    <span class="font-bold text-slate-800 text-sm">{{ exam_data.total_duration|default:0 }} daq</span>
+                </div>
+
+                <!-- Savollar -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 bg-rose-100 rounded-md flex items-center justify-center">
+                            <i class="fas fa-list-ol text-rose-600 text-xs"></i>
+                        </div>
+                        <span class="text-slate-500">Savollar</span>
+                    </div>
+                    <span class="font-bold text-emerald-600 text-sm">{{ exam_data.total_questions|default:0 }} ta</span>
+                </div>
+
+                <!-- Ishlaganlar – 0 bo‘lsa ham doim ko‘rinadi -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 bg-amber-100 rounded-md flex items-center justify-center">
+                            <i class="fas fa-users text-amber-600 text-xs"></i>
+                        </div>
+                        <span class="text-slate-500">Ishlaganlar</span>
+                    </div>
+                    <span class="font-bold text-slate-800 text-sm">
+                        {% if exam_data.unique_users_count > 0 %}
+                            {{ exam_data.unique_users_count }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </span>
+                </div>
+
+            </div>
+
+            <!-- Bo‘limlar -->
+            {% if exam_data.sections %}
+            <div class="pt-3 border-t border-slate-100">
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Bo‘limlar</p>
+                <div class="flex flex-wrap gap-1">
+                    {% for section in exam_data.sections %}
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold
+                                     {% if section.is_math %}bg-indigo-50 text-indigo-700 border border-indigo-200
+                                     {% else %}bg-emerald-50 text-emerald-700 border border-emerald-200{% endif %}">
+                            <i class="fas {% if section.is_math %}fa-calculator{% else %}fa-book-open{% endif %} text-[9px]"></i>
+                            {{ section.type_display }}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Tugmalar – doim pastda -->
+        <div class="px-4 pb-4 pt-3 border-t border-slate-100 mt-auto flex-shrink-0">
+            {% if exam_data.can_start_exam %}
+                <div class="space-y-2">
+                    <!-- YANGI: AJAX bilan ishlaydigan tugma -->
+                    <button class="start-exam-btn w-full py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 
+                                   text-white font-bold rounded-lg shadow-md hover:shadow-lg 
+                                   transition-all duration-200 active:scale-95 text-sm flex items-center justify-center gap-2"
+                            data-exam-id="{{ exam.id }}">
+                        <i class="fas fa-play text-xs"></i>
+                        <span class="btn-text">Testni Boshlash</span>
+                        <i class="fas fa-spinner fa-spin hidden"></i>
+                    </button>
+
+                    {% if exam_data.has_flashcard_exam %}
+                    <a href="{% url 'flashcard_exam_view' center.slug exam.id %}"
+                       class="block text-center py-2.5 bg-gradient-to-r from-sky-500 to-cyan-500 
+                              text-white font-bold rounded-lg shadow-md hover:shadow-lg 
+                              transition-all duration-200 active:scale-95 text-sm">
+                        <i class="fas fa-layer-group text-xs mr-1"></i>
+                        So‘zlarni Yodlash
+                    </a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <a href="{% url 'price' center.slug %}"
+                   class="block text-center py-2.5 bg-gradient-to-r from-rose-500 to-pink-600 
+                          text-white font-bold rounded-lg shadow-md hover:shadow-lg 
+                          transition-all duration-200 active:scale-95 text-sm">
+                    <i class="fas fa-crown text-xs mr-1"></i>
+                    Premium Sotib Olish
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endwith %}

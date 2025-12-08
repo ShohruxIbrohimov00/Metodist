@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block title %}Imtihonlar ro'yxati{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+/* Stil sozlamalari */
+.exam-card { transition: all 0.3s ease; }
+.exam-card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); }
+
+.btn { 
+    display: inline-flex; 
+    align-items: center; 
+    padding: 0.5rem 1rem; 
+    font-weight: 600; 
+    border-radius: 0.375rem; 
+    transition: all 0.3s; 
+}
+.btn-primary { background-color: #3b82f6; color: white; }
+.btn-primary:hover { background-color: #2563eb; }
+.btn-danger { background-color: #ef4444; color: white; }
+.btn-danger:hover { background-color: #dc2626; }
+.btn-secondary { background-color: #6b7280; color: white; }
+.btn-secondary:hover { background-color: #4b5563; }
+.btn-icon { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    width: 2rem; 
+    height: 2rem; 
+    border-radius: 50%; 
+    transition: all 0.2s; 
+}
+.btn-icon:hover { background-color: rgba(0, 0, 0, 0.1); }
+
+/* Modal style */
+.modal { 
+    display: none; 
+    position: fixed; 
+    z-index: 1000; 
+    left: 0; top: 0; 
+    width: 100%; height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0, 0, 0, 0.4); 
+    padding-top: 60px; 
+}
+.modal-content { 
+    background-color: #fefefe; 
+    margin: 5% auto; 
+    padding: 20px; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+    width: 90%; max-width: 500px; 
+}
+.close { 
+    color: #aaa; float: right; font-size: 28px; font-weight: bold; 
+}
+.close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; }
+
+/* Qidiruv input */
+#searchExamInput {
+    width: 100% !important;
+    padding-left: 3rem !important;
+    padding-right: 1.25rem !important;
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+    border: 1px solid rgb(203 213 225) !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05) !important;
+    color: rgb(71 85 105) !important;
+    font-size: 1rem !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='h-6 w-6 text-slate-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: left 12px center !important;
+    background-size: 20px !important;
+    background-color: white !important;
+    transition: all 0.2s ease-in-out !important;
+    outline: none !important;
+}
+#searchExamInput:focus {
+    border-color: #4f46e5 !important;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2) !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8 max-w-5xl">
+    <div class="bg-white shadow-xl rounded-xl p-6 md:p-8 border border-gray-100">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-4 sm:space-y-0">
+            <h2 class="text-3xl font-extrabold text-gray-900">{% trans "Imtihonlar ro'yxati" %}</h2>
+            <a href="{% url 'exam_create' slug=center.slug %}" class="btn btn-primary">
+                <i class="fas fa-plus mr-2"></i>{% trans "Yangi imtihon qo'shish" %}
+            </a>
+        </div>
+
+        <!-- 🔍 Qidiruv input -->
+        <div class="mb-6">
+            <input type="text" id="searchExamInput" placeholder="{% trans 'Imtihon nomi, ID yoki turi bo‘yicha qidiruv...' %}">
+        </div>
+
+        {% if exams %}
+        <div class="grid grid-cols-1 gap-6" id="exam-cards-grid">
+            {% for exam in exams %}
+            <div class="exam-card bg-gray-50 rounded-lg p-6 border border-gray-200 shadow-sm transition-shadow duration-200"
+                 data-search-term="{{ exam.title|lower }} {{ exam.id }} {% if exam.is_subject_exam %}mavzu{% else %}to'liq{% endif %}} {{ exam.description|lower }}">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-4 sm:space-y-0">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-800">{{ exam.title }}</h3>
+                        <p class="text-sm text-gray-600 mt-1 space-x-2">
+                            <span class="font-medium text-indigo-600">
+                                {% if exam.is_subject_exam %}{% trans "Mavzu testi" %}{% else %}{% trans "To'liq sinov" %}{% endif %}
+                            </span>
+                            <span class="text-gray-500">|</span>
+                            {% trans "Bo'limlar soni" %}: <b>{{ exam.section_count }}</b>
+                            <span class="text-gray-500">|</span>
+                            {% trans "Faol" %}: 
+                            {% if exam.is_active %}
+                                <span class="text-green-600 font-medium">{% trans "Ha" %}</span>
+                            {% else %}
+                                <span class="text-red-600 font-medium">{% trans "Yo'q" %}</span>
+                            {% endif %}
+                        </p>
+                        {% if exam.description %}
+                        <p class="text-sm text-gray-600 mt-1">{{ exam.description|truncatewords:20 }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="flex space-x-2 flex-shrink-0">
+                        <a href="{% url 'exam_edit' slug=center.slug pk=exam.id %}" class="btn-icon text-blue-600 hover:bg-blue-100" title="{% trans 'Tahrirlash' %}">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button onclick="openDeleteModal('delete-modal-{{ exam.id }}')" class="btn-icon text-red-600 hover:bg-red-100" title="{% trans 'O\'chirish' %}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                        <a href="{% url 'section_list' slug=center.slug %}" class="btn-icon text-green-600 hover:bg-green-100" title="{% trans 'Bo\'limlar shablonini ko\'rish' %}">
+                            <i class="fas fa-list"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+            <i class="fas fa-exclamation-triangle text-6xl text-gray-400 mb-4"></i>
+            <p class="text-lg text-gray-500 mb-4">{% trans "Hali imtihonlar mavjud emas." %}</p>
+            <a href="{% url 'exam_create' slug=center.slug %}" class="btn btn-primary">
+                {% trans "Birinchi imtihonni qo'shish" %}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if exams %}
+    {% for exam in exams %}
+    <div id="delete-modal-{{ exam.id }}" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('delete-modal-{{ exam.id }}')">&times;</span>
+            <h3 class="text-xl font-bold text-gray-800 mb-4">{% trans "Imtihonni o'chirish" %}</h3>
+            <p class="text-gray-600 mb-4">
+                {% trans "Haqiqatan ham" %} "<span class="font-semibold">{{ exam.title }}</span>" {% trans "imtihonini o'chirmoqchimisiz? Bu amalni ortga qaytarib bo'lmaydi." %}
+            </p>
+            <form method="post" action="{% url 'exam_delete' slug=center.slug pk=exam.id %}"> 
+                {% csrf_token %}
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeModal('delete-modal-{{ exam.id }}')" class="btn btn-secondary">{% trans "Bekor qilish" %}</button>
+                    <button type="submit" class="btn btn-danger">{% trans "O'chirish" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script>
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+function openDeleteModal(modalId) {
+    document.querySelectorAll('.modal').forEach(modal => { modal.style.display = 'none'; });
+    document.getElementById(modalId).style.display = 'block';
+}
+window.onclick = function(event) {
+    if(event.target.classList.contains('modal')) { event.target.style.display = 'none'; }
+}
+
+// 🔍 Real-time qidiruv
+$('#searchExamInput').on('keyup', function() {
+    let filter = $(this).val().toLowerCase();
+    let anyVisible = false;
+
+    $('.exam-card').each(function() {
+        let term = $(this).data('search-term');
+        if(term.includes(filter)) {
+            $(this).show(); anyVisible = true;
+        } else {
+            $(this).hide();
+        }
+    });
+
+    // Agar natija topilmasa
+    if(!anyVisible) {
+        if(!$('#no-results').length) {
+            $('#exam-cards-grid').append('<p id="no-results" class="text-center py-8 text-gray-400">{% trans "Kiritilgan so‘z bo‘yicha imtihon topilmadi." %}</p>');
+        }
+    } else {
+        $('#no-results').remove();
+    }
+});
+</script>
+{% endblock %}

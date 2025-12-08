@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n widget_tweaks %}
+
+{% block title %}{% trans "Yangi Flashcard yaratish" %}{% endblock %}
+
+{% block extra_css %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        /* Select2'ning Tailwind bilan chiroyli ishlashi uchun asosiy moslamalar */
+        .select2-container .select2-selection--single,
+        .select2-container .select2-selection--multiple {
+            min-height: 42px; 
+            border-radius: 0.5rem; 
+            border: 1px solid #D1D5DB; 
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 40px;
+            padding-left: 1rem;
+        }
+        .select2-container--default.select2-container--focus .select2-selection--multiple {
+            border-color: #4f46e5;
+        }
+        /* Forma elementlari uchun umumiy stil (widget_tweaks ishlatilganda kerak) */
+        .form-control { 
+            border: 1px solid #d1d5db; 
+            border-radius: 0.375rem; 
+            padding: 0.6rem 0.75rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); 
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; 
+        }
+        .form-control:focus { 
+            border-color: #4f46e5; 
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); 
+            outline: none; 
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 md:p-10">
+    <div class="bg-white rounded-xl shadow-2xl p-6 md:p-10 max-w-4xl mx-auto border border-gray-100">
+        
+        <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2 text-center">{% trans "Flashcard Yaratish" %} 🧠</h2>
+        <p class="text-center text-gray-500 mb-8 text-sm md:text-base">{% trans "Markaz" %}: <span class="font-semibold text-indigo-600">{{ center.name }}</span></p>
+
+        {% if form.non_field_errors %}
+            <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg border border-red-200" role="alert">
+                <p class="font-bold">{% trans "Xatolik" %}:</p>
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            {# 1. Kontent turi tanlovi #}
+            <div class="p-4 bg-indigo-50 rounded-lg border border-indigo-200">
+                <label for="{{ form.content_type.id_for_label }}" class="block text-gray-800 font-bold mb-3 text-base md:text-lg">{{ form.content_type.label }} <span class="text-indigo-600 font-normal text-sm">({% trans "Tanlang" %})</span></label>
+                
+                {% render_field form.content_type class="w-full select2-simple" %}
+
+                {% for error in form.content_type.errors %}
+                    <p class="text-red-500 text-sm mt-2">{{ error }}</p>
+                {% endfor %}
+            </div>
+            
+            {# 2. Taglar maydoni (AJAX QIDIRUV BILAN) #}
+            <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <label for="{{ form.tags.id_for_label }}" class="block text-gray-800 font-bold mb-3 text-base md:text-lg">{{ form.tags.label }} <span class="text-gray-500 font-normal text-sm">({% trans "Ixtiyoriy, qidiruv" %})</span></label>
+                
+                {# Select2 AJAX qidiruvi uchun maxsus klass #}
+                {% render_field form.tags class="w-full select2-ajax-tags" %}
+                
+                {% for error in form.tags.errors %}
+                    <p class="text-red-500 text-sm mt-2">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            {# 3. Inglizcha Kontent #}
+            <div class="border-l-4 border-indigo-600 pl-4">
+                <label for="{{ form.english_content.id_for_label }}" class="block text-gray-800 font-bold mb-2 text-base md:text-lg">{{ form.english_content.label }} <span class="text-red-500">*</span></label>
+                {% render_field form.english_content class="w-full form-control" rows="4" %}
+                {% for error in form.english_content.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            {# 4. O'zbekcha Ma'nosi #}
+            <div class="border-l-4 border-green-600 pl-4">
+                <label for="{{ form.uzbek_meaning.id_for_label }}" class="block text-gray-800 font-bold mb-2 text-base md:text-lg">{{ form.uzbek_meaning.label }} <span class="text-red-500">*</span></label>
+                {% render_field form.uzbek_meaning class="w-full form-control" rows="4" %}
+                {% for error in form.uzbek_meaning.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            {# 5. Kontekst (ixtiyoriy) #}
+            <div class="border-l-4 border-yellow-600 pl-4">
+                <label for="{{ form.context_sentence.id_for_label }}" class="block text-gray-800 font-bold mb-2 text-base md:text-lg">{{ form.context_sentence.label }} <span class="text-gray-400">({% trans "ixtiyoriy" %})</span></label>
+                {% render_field form.context_sentence class="w-full form-control" rows="3" %}
+                {% for error in form.context_sentence.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            {# Tugmalar #}
+            <div class="flex flex-col md:flex-row justify-between items-center pt-6 border-t border-gray-200 space-y-3 md:space-y-0">
+                <a href="{% url 'list_flashcards' slug=center.slug %}" class="w-full md:w-auto text-center bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-8 rounded-lg transition duration-300">
+                    <i class="fas fa-arrow-left mr-2"></i> {% trans "Bekor qilish" %}
+                </a>
+                <button type="submit" id="save-button" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-[1.02]">
+                    <i class="fas fa-save mr-2"></i> {% trans "Saqlash" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // 1. content_type va source_question uchun oddiy Select2 (kamroq ma'lumotlar uchun)
+    $('.select2-simple').select2({
+         width: '100%', 
+         theme: 'default',
+         // minimumResultsForSearch: Infinity ni o'chirdik, shunda agar 10 tadan ko'p tanlov bo'lsa qidiruv chiqadi
+    });
+
+    // 2. TAGS UCHUN AJAX SELECT2 (Katta ma'lumotlar to'plami uchun)
+    $('.select2-ajax-tags').select2({
+         placeholder: "{% trans "Taglarni qidirish va tanlash (kamida 2 harf)" %}",
+         allowClear: true,
+         multiple: true,
+         minimumInputLength: 2, 
+         width: '100%', 
+         theme: 'default',
+         closeOnSelect: false, 
+         
+         ajax: {
+            // !!! TO'G'RI URL MANZILINI QAYTA O'RNATDIK !!!
+            url: "{% url 'search_tags_ajax' slug=center.slug %}", 
+            dataType: 'json',
+            delay: 250, 
+            data: function(params) {
+                return {
+                    q: params.term, 
+                    page: params.page 
+                };
+            },
+            processResults: function(data, params) {
+                params.page = params.page || 1;
+                return {
+                    // data.items Select2 kutadigan formatda bo'lishi kerak: [{id: 1, text: 'Tag nomi'}, ...]
+                    results: data.items,
+                    pagination: {
+                        more: data.total_count && (params.page * 20) < data.total_count 
+                    }
+                };
+            },
+            cache: true
+         }
+    });
+
+    // Oldindan tanlangan qiymatlarni AJAX orqali to'g'ri ko'rsatish funksiyasini 
+    // hozircha olib tashladim, chunki u formaning ma'lumotlari bilan bog'liq va Select2 uni avtomatik yuklashga harakat qiladi.
+    // Agar muammo yuzaga kelsa, bu funksiyani qaytarib qo'yish mumkin.
+
+});
+</script>
+{% endblock %}
