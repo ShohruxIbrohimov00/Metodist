@@ -148,7 +148,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Whitenoise statik fayllarni serverda ishlatish uchun
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # ----------------------------------------------------
 # BOSHQA SOZLAMALAR
