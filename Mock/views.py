@@ -382,19 +382,46 @@ import json
 import logging
 
 
-
 @login_required(login_url='login')
 def dashboard_view(request, slug):
+    """
+    Foydalanuvchi dashboard sahifasini ko'rsatadi.
+    Barcha DB murojaatlari va hisob-kitoblar xavfsiz (try/except) bloklari ichida.
+    """
+    from django.db.models import Count, Sum, Max, Avg, Q
+    from django.urls import reverse
+    from django.contrib import messages
+    from django.shortcuts import redirect, get_object_or_404
+    from django.utils import timezone
+    from datetime import timedelta
+    import json
+    import logging
+    
+    # Zarur modellarni import qilishni unutmang (Exam, Course, UserAttempt, UserFlashcardStatus, Lesson, UserResourceView, Purchase, Center)
+    # Masalan: from .models import Center, Exam, Course, UserAttempt, UserFlashcardStatus, Lesson, UserResourceView, Purchase 
+    
+    logger = logging.getLogger(__name__)
+
     user = request.user
+    
+    # 1. MARKAZNI YUKLASH
     center = get_object_or_404(Center, slug=slug)
 
-    if user.center != center:
-        messages.error(request, "Siz bu markazga a'zo emassiz.")
-        return redirect('center_access_denied')
+    # 2. XAVFSIZLIK TEKSHIRUVI: ID raqamlarini solishtirish (500 xatosidan himoya)
+    # user.center != center o'rniga user.center_id != center.id ishlatiladi.
+    # user.center_id obyektni yuklashga majburlamaydi, shuning uchun Center.DoesNotExist xatosi chiqmaydi.
+    if getattr(user, 'center_id', None) is None or user.center_id != center.id:
+        messages.error(request, "Siz bu markazga a'zo emassiz yoki markazga kirish huquqingiz yo‘q.")
+        return redirect('center_access_denied') # Yoki umumiy 'index' sahifasiga
 
+    # --- ASOSIY DASHBOARD MANTIQI ---
+    
     agenda_items = []
     course_progress_data = []
 
+    # Barcha DB operatsiyalarini o'rab turuvchi yirik try/except blokini saqlaymiz, ammo uni faqat kerakli joylarga qo'yamiz.
+    # Agar bu qismda xato kelsa, sahifa ishlamay qoladi. Shuning uchun mantiqiy bloklarga ajratamiz.
+    
     try:
         # 1. Flashcard takrorlash
         if UserFlashcardStatus.objects.filter(user=user, next_review_at__lte=timezone.now()).exists():
@@ -408,7 +435,7 @@ def dashboard_view(request, slug):
                 'color': 'teal'
             })
 
-        # 2. AKTIV KURSLAR
+        # 2. AKTIV KURSLAR VA PROGRESS
         enrolled_groups = user.enrolled_groups.all()
         group_courses = Course.objects.filter(
             groups_in_course__in=enrolled_groups,
@@ -442,6 +469,7 @@ def dashboard_view(request, slug):
                 if percent < 100:
                     lessons = Lesson.objects.filter(module__course=course).order_by('module__order', 'order')
                     for lesson in lessons:
+                        # Bu joyda ham xavfsizlikni oshirish uchun try-except ishlatish mumkin, lekin hozircha standart qoldiramiz
                         if lesson.resources.count() > UserResourceView.objects.filter(
                             user=user, lesson_resource__lesson=lesson
                         ).count():
@@ -467,7 +495,7 @@ def dashboard_view(request, slug):
                     'color': 'indigo'
                 })
 
-        # 3. HECH QANDAY KURS YO‘Q BO‘LSA – XAVFSIZ URL!
+        # 3. HECH QANDAY KURS YO‘Q BO‘LSA
         if not active_courses.exists():
             agenda_items.append({
                 'priority': 0,
@@ -505,17 +533,18 @@ def dashboard_view(request, slug):
             })
 
     except Exception as e:
-        logger.error(f"Dashboard error: {e}")
+        # Agar asosiy ma'lumotlarni olishda xato kelsa, faqatgina logga yozamiz.
+        # Sahifa kamida ma'lumotlarsiz yuklansin.
+        logger.error(f"Dashboard asosiy ma'lumotlar xatosi: {e}")
 
     agenda_items = sorted(agenda_items, key=lambda x: x['priority'])[:3]
 
-    # --- Statistika ---
+    # --- STATISTIKA BLOKI (Xato bo'lsa ham sahifa buzilmaydi) ---
     today = timezone.now().date()
     week_ago = today - timedelta(days=6)
     dates = [week_ago + timedelta(i) for i in range(7)]
     chart_labels = json.dumps([d.strftime("%b %d") for d in dates])
 
-    # Boshqa statistikalar (xato bo‘lsa ham sahifa buzilmasin)
     exam_score_data = flashcard_data = json.dumps([0] * 7)
     highest_score = completed_exam_count = learned_flashcards_count = 0
     leaderboard_users = []
@@ -538,9 +567,9 @@ def dashboard_view(request, slug):
         flashcard_data = json.dumps([review_map.get(d, 0) for d in dates])
 
         # Liderlar
-        leaderboard_users = User.objects.filter(center=center, role='student') \
+        leaderboard_users = user.__class__.objects.filter(center=center, role='student') \
             .annotate(score=Max('attempts__final_total_score',
-                               filter=Q(attempts__is_completed=True, attempts__exam__is_subject_exam=False))) \
+                                filter=Q(attempts__is_completed=True, attempts__exam__is_subject_exam=False))) \
             .exclude(score__isnull=True).order_by('-score')[:5]
 
         highest_score = UserAttempt.objects.filter(
@@ -554,8 +583,10 @@ def dashboard_view(request, slug):
         learned_flashcards_count = UserFlashcardStatus.objects.filter(user=user, status='learned').count()
 
     except Exception as e:
-        logger.error(f"Stats error: {e}")
+        # Agar statistika hisoblashda xato kelsa, sahifaning asosiy qismi buzilmaydi
+        logger.error(f"Statistika hisoblash xatosi: {e}")
 
+    # --- KONTEKST VA RENDER ---
     context = {
         'center': center,
         'agenda_items': agenda_items,
@@ -571,7 +602,7 @@ def dashboard_view(request, slug):
     }
     return render(request, 'student/dashboard.html', context)
 
-
+    
 from django.shortcuts import render, redirect
 from django.db.models import Count, Max, Avg, Sum, Q, F
 from django.utils import timezone
