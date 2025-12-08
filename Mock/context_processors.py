@@ -15,7 +15,7 @@ def global_context(request):
     
     # Boshlang'ich kontekst (markaz biriktirilmagan yoki foydalanuvchi kirmagan)
     context = {
-        'CENTER_NAME': "Online Platforma", # Umumiy nom
+        'CENTER_NAME': "Sat makon", # Umumiy nom
         'center': None,
         'CENTER_SLUG': None,
         'user_is_manager': False,
