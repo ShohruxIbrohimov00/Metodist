@@ -741,37 +741,40 @@ def teacher_dashboard(request, slug):
 def profile_view(request, slug): 
     """Profil sahifasini ko'rsatadi va ma'lumotlarni tahrirlashni boshqaradi."""
     
-    # 1. MARKAZNI TEKSHIRISH (Dashboard'dagi kabi xavfsizlik va 404 xatosini oldini olish)
-    # Agar slug bo'yicha markaz topilmasa, avtomatik ravishda 404 beriladi.
+    # get_object_or_404 funksiyasi 'Center' modelidan import qilingan deb faraz qilinadi
+    # 1. MARKAZNI TEKSHIRISH
     center = get_object_or_404(Center, slug=slug)
+    
+    # request.user.center obyekti o'rniga center_id atributini ishlatish xavfsizroq.
+    # user.center_id obyektni bazadan tortib olishga harakat qilmaydi.
+    user_center_id = getattr(request.user, 'center_id', None)
 
-    # 2. Xavfsizlik tekshiruvi: Foydalanuvchi shu markazga bog'langanmi?
-    if request.user.center is None or request.user.center != center:
+    # 2. Xavfsizlik tekshiruvi: center_id ni slug orqali topilgan center.id bilan solishtirish
+    if user_center_id is None or user_center_id != center.id:
         messages.error(request, "Bu markaz profiliga kirish huquqingiz yo‘q.")
         
-        # Kirish huquqi yo'q bo'lsa, foydalanuvchini uning o'z dashboardiga yuborishga harakat qiling.
-        # Agar user.center None bo'lsa, bu yerda "AttributeError" xavfi bor, shuning uchun shartli redirect qilamiz
-        if request.user.center:
-            return redirect('dashboard', slug=request.user.center.slug)
-        else:
-             return redirect('index') # Yoki umumiy/markazsiz sahifaga
+        # Kirish huquqi yo'q bo'lsa, foydalanuvchini umumiy 'index' sahifasiga yo'naltiramiz.
+        # Bu redirect xavfsiz, chunki u user.center obyektini yuklashga urinmaydi.
+        return redirect('index')
             
     # --- Asosiy mantiq ---
     
     if request.method == 'POST':
-        # Eslatma: ProfileUpdateForm modelini shu yerda mavjud deb hisoblaymiz
+        # ProfileUpdateForm modelini shu yerda mavjud deb hisoblaymiz
         form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, "Profilingiz muvaffaqiyatli yangilandi.")
             
-            # POST dan keyin o'sha sahifaga qaytishda SLUG berish majburiy
+            # POST dan keyin o'sha sahifaga SLUG bilan qaytish
             return redirect('profile', slug=center.slug) 
         else:
             messages.error(request, "Ma'lumotlarni saqlashda xatolik yuz berdi. Iltimos, formalarni to'g'ri to'ldiring.")
     else:
         form = ProfileUpdateForm(instance=request.user)
 
+    # Bu qismlar, agar ular to'g'ridan-to'g'ri CustomUser modelida mavjud bo'lsa, xato bermaydi.
+    # Agar ular OneToOneField bo'lsa va obyekti yo'q bo'lsa, try/except kerak bo'ladi.
     subscription = getattr(request.user, 'subscription', None)
     user_balance = getattr(request.user, 'balance', None)
     
@@ -779,7 +782,7 @@ def profile_view(request, slug):
         'form': form,
         'subscription': subscription,
         'user_balance': user_balance,
-        'center': center, # Kontekstga center'ni qo'shishni unutmang
+        'center': center, # Kontekstga center'ni qo'shish
     }
     return render(request, 'student/profile.html', context)
 
