@@ -87,8 +87,8 @@ else:
         'default': dj_database_url.config(
             default=config('DATABASE_URL'),
             conn_max_age=600,  # Ulanish vaqtini cheklash
-            # ✨ TUZATISH: OPTIONS argumentini to'g'ri uzatish
-            OPTIONS={'sslmode': 'require'}
+            # ✨ TUZATISH: OPTIONS argumentini dj_database_url.config ga to'g'ri uzatish
+            OPTIONS={'sslmode': 'require'} 
         )
     }
 # ----------------------------------------------------
