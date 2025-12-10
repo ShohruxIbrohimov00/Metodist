@@ -42,5 +42,7 @@ uritemplate==4.2.0
 waitress==3.0.2
 webencodings==0.5.1
 whitenoise==6.11.0
+django-storages boto3
+
 
 
