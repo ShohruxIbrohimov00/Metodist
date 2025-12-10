@@ -1,16 +1,15 @@
 # BUNNY.NET STORAGE SOZLAMALARI
 # (Storage Zone yaratilgandan so'ng)
-BUNNY_STORAGE_ZONE_NAME='sizning-storage-zone-nomingiz'
+BUNNY_STORAGE_ZONE_NAME='satmakonvideolari'
 
 # Bunny API Kalitlari:
 # Masalan, Bunny Storage Zone da 'Settings' > 'API Access' da olinadi
-BUNNY_ACCESS_KEY='sizning-access-key' 
-BUNNY_SECRET_KEY='sizning-secret-key' # Aksariyat hollarda Bunny da kerak bo'lmaydi, lekin boto3 uchun qoldiramiz
+BUNNY_ACCESS_KEY='761c7518-e520-416b-8f7af941bf23-d285-4374'
 
 # Endpoint URL (Regionga qarab):
 # Masalan, Yevropa (NY): https://ny.storage.bunnycdn.com
-BUNNY_ENDPOINT_URL='https://[region].storage.bunnycdn.com'
-BUNNY_REGION='[region]' # Masalan, 'ny'
+BUNNY_ENDPOINT_URL='https://ny.storage.bunnycdn.com'
+BUNNY_REGION='ny'
 
 # Bunny CDN (Pull Zone) host manzili:
 # Masalan: cdn.sizningdomen.com yoki sizning pull zone nomingiz.b-cdn.net
