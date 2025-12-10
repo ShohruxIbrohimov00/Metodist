@@ -7,10 +7,10 @@ BUNNY_STORAGE_ZONE_NAME='satmakonvideolari'
 BUNNY_ACCESS_KEY='761c7518-e520-416b-8f7af941bf23-d285-4374'
 
 # Endpoint URL (Regionga qarab):
-# Masalan, Yevropa (NY): https://ny.storage.bunnycdn.com
-BUNNY_ENDPOINT_URL='https://ny.storage.bunnycdn.com'
-BUNNY_REGION='ny'
+# Frankfurt (DE) mintaqasi uchun umumiy Yevropa Storage manzili ishlatiladi
+BUNNY_ENDPOINT_URL='https://storage.bunnycdn.com'
+BUNNY_REGION='se'
 
 # Bunny CDN (Pull Zone) host manzili:
-# Masalan: cdn.sizningdomen.com yoki sizning pull zone nomingiz.b-cdn.net
-BUNNY_CDN_PULL_ZONE_HOST='sizning-pull-zone-nomingiz.b-cdn.net'
+# cdn.SATvideos.com sizning domen nomingiz sifatida aniqlandi
+BUNNY_CDN_PULL_ZONE_HOST='cdn.SATvideos.com'
