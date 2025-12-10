@@ -159,11 +159,11 @@ if not DEBUG:
     AWS_S3_ENDPOINT_URL = config('BUNNY_ENDPOINT_URL') 
     
     # API Kalitlari (Bunny Storage API kalitlari)
-    AWS_ACCESS_KEY_ID = config('BUNNY_ACCESS_KEY')
+    AWS_ACCESS_KEY_ID = config('BUNNY_ACCESS_KEY', default='')
     # MUHIM: Bunny.net'da ikkita kalit yo'q, shuning uchun Access Key'ni Secret Key o'rniga ham ishlatamiz.
-    AWS_SECRET_ACCESS_KEY = config('BUNNY_ACCESS_KEY') 
+    AWS_SECRET_ACCESS_KEY = config('BUNNY_ACCESS_KEY', default='') 
     
-    AWS_STORAGE_BUCKET_NAME = config('BUNNY_STORAGE_ZONE_NAME') # Bunny'da yaratilgan Storage Zone nomi
+    AWS_STORAGE_BUCKET_NAME = config('BUNNY_STORAGE_ZONE_NAME', default='') # Bunny'da yaratilgan Storage Zone nomi
     
     # Fayl Saqlash Manzilini Belgilash
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
