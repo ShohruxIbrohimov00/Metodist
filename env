@@ -1,0 +1,17 @@
+# BUNNY.NET STORAGE SOZLAMALARI
+# (Storage Zone yaratilgandan so'ng)
+BUNNY_STORAGE_ZONE_NAME='sizning-storage-zone-nomingiz'
+
+# Bunny API Kalitlari:
+# Masalan, Bunny Storage Zone da 'Settings' > 'API Access' da olinadi
+BUNNY_ACCESS_KEY='sizning-access-key' 
+BUNNY_SECRET_KEY='sizning-secret-key' # Aksariyat hollarda Bunny da kerak bo'lmaydi, lekin boto3 uchun qoldiramiz
+
+# Endpoint URL (Regionga qarab):
+# Masalan, Yevropa (NY): https://ny.storage.bunnycdn.com
+BUNNY_ENDPOINT_URL='https://[region].storage.bunnycdn.com'
+BUNNY_REGION='[region]' # Masalan, 'ny'
+
+# Bunny CDN (Pull Zone) host manzili:
+# Masalan: cdn.sizningdomen.com yoki sizning pull zone nomingiz.b-cdn.net
+BUNNY_CDN_PULL_ZONE_HOST='sizning-pull-zone-nomingiz.b-cdn.net'
