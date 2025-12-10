@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize', 
     'django_bleach',
     'crispy_forms',
-    'storages',
+    'storages', # Bunny.net (S3) uchun qo'shildi
 ]
 
 # ----------------------------------------------------
@@ -109,11 +109,11 @@ else:
         }
     }
 
-# CELERY BROKER URL SIZNING SO'ROVINGIZGA KO'RA BUTUNLAY O'CHIRILDI.
-# ----------------------------------------------------
 
 # ----------------------------------------------------
 # XAVFSIZLIKNI KUCHAYTIRISH (DEBUG=False bo'lganda)
+# ----------------------------------------------------
+# CSRF VA DOMENLAR
 # ----------------------------------------------------
 if not DEBUG:
     # Render HTTPS ishlatganligi uchun
@@ -130,16 +130,16 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
 
-# ----------------------------------------------------
-# CSRF VA DOMENLAR
-# ----------------------------------------------------
-# ALLOWED_HOSTS asosida avtomatik HTTPS manbalarni qo'shadi
-CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host not in ['127.0.0.1', 'localhost']]
-CSRF_TRUSTED_ORIGINS += ['http://127.0.0.1:8000', 'http://localhost:8000', 'https://localhost:8000'] 
+    # ALLOWED_HOSTS asosida avtomatik HTTPS manbalarni qo'shadi
+    CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host not in ['127.0.0.1', 'localhost']]
+    CSRF_TRUSTED_ORIGINS += ['http://127.0.0.1:8000', 'http://localhost:8000', 'https://localhost:8000']
+else:
+    # Lokal rivojlanishda buni sozlash shart emas
+    CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000', 'https://localhost:8000'] 
 
 
 # ----------------------------------------------------
-# STATIC VA MEDIA FILES (Render/Whitenoise)
+# STATIC VA MEDIA FILES (Render/Whitenoise va Bunny.net)
 # ----------------------------------------------------
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
@@ -150,7 +150,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # ⭐️ MEDIA/FAYL SOZLAMALARI (BUNNY.NET UCHUN)
-# ⭐️ MEDIA/FAYL SOZLAMALARI (BUNNY.NET UCHUN)
 if not DEBUG:
     # Production uchun (Fayllarni Bunny Storage'ga yo'naltiramiz)
     
@@ -160,7 +159,7 @@ if not DEBUG:
     
     # API Kalitlari (Bunny Storage API kalitlari)
     AWS_ACCESS_KEY_ID = config('BUNNY_ACCESS_KEY')
-    # Xato tuzatildi: Bunny.net'ning bitta kalitini Secret Key o'rniga ham ishlatish
+    # MUHIM: Bunny.net'da ikkita kalit yo'q, shuning uchun Access Key'ni Secret Key o'rniga ham ishlatamiz.
     AWS_SECRET_ACCESS_KEY = config('BUNNY_ACCESS_KEY') 
     
     AWS_STORAGE_BUCKET_NAME = config('BUNNY_STORAGE_ZONE_NAME') # Bunny'da yaratilgan Storage Zone nomi
@@ -176,14 +175,14 @@ if not DEBUG:
     AWS_S3_FILE_OVERWRITE = False
     
     # CKEditor Yuklash Yo'li (Avtomatik Bunny ga yuklanadi)
-    # CKEditor'da yuklanadigan barcha fayllar Bunny'da shu papkaga tushadi
-    CKEDITOR_UPLOAD_PATH = 'media/uploads/' 
+    # CKEditorda yuklanadigan barcha fayllar Bunnyda 'uploads/' papkasiga tushadi
+    CKEDITOR_UPLOAD_PATH = 'uploads/' 
     
 else:
     # Lokal rivojlanish uchun
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-    CKEDITOR_UPLOAD_PATH = "uploads/"
+    CKEDITOR_UPLOAD_PATH = "uploads/" # Lokal 'media/uploads' papkasi
 # ----------------------------------------------------
 # BOSHQA SOZLAMALAR
 # ----------------------------------------------------
@@ -224,9 +223,8 @@ TIME_ZONE = 'Asia/Tashkent'
 USE_I18N = True
 USE_TZ = True
 
-# CKEditor Sozlamalari (o'zgarishsiz qoldirildi)
-CKEDITOR_UPLOAD_PATH = "uploads/"
-CKEDITOR_IMAGE_BACKEND = "pillow"
+# CKEditor Sozlamalari 
+CKEDITOR_IMAGE_BACKEND = "pillow" # BU YERDA CKEDITOR_UPLOAD_PATH BO'LMASLIGI KERAK!
 
 CKEDITOR_CONFIGS = {
     'default': {
