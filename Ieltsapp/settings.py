@@ -188,12 +188,29 @@ else:
 # BOSHQA SOZLAMALAR
 # ----------------------------------------------------
 
+# settings.py faylida 230-qator atrofida
+
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {'console': {'class': 'logging.StreamHandler',}},
-    # DEBUG holatiga qarab log levelini sozlash
-    'loggers': {'': {'handlers': ['console'], 'level': 'INFO' if not DEBUG else 'DEBUG',}},
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'DEBUG', # <--- DEBUG levelga o'zgartirdik
+            'propagate': True,
+        },
+        # Ushbu logger faqat fayl saqlashdagi muammolarni ko'rsatadi
+        'storages': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
 }
 
 TEMPLATES = [
