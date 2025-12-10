@@ -70,6 +70,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'Ieltsapp.urls'
 WSGI_APPLICATION = 'Ieltsapp.wsgi.application'
 
+# settings.py dagi 87-qatordan boshlab, quyidagicha qiling:
 # ----------------------------------------------------
 # DATABASE (PostgreSQL Sozlamalari)
 # ----------------------------------------------------
@@ -86,9 +87,8 @@ else:
     DATABASES = {
         'default': dj_database_url.config(
             default=config('DATABASE_URL'),
-            conn_max_age=600,  # Ulanish vaqtini cheklash
-            # ✨ TUZATISH: OPTIONS argumentini dj_database_url.config ga to'g'ri uzatish
-            OPTIONS={'sslmode': 'require'} 
+            conn_max_age=600,
+            ssl_require=True # OPTIONS={'sslmode': 'require'} o'rniga buni sinab ko'ramiz
         )
     }
 # ----------------------------------------------------
