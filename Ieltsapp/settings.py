@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize', 
     'django_bleach',
     'crispy_forms',
+    'storages',
 ]
 
 # ----------------------------------------------------
@@ -144,12 +145,43 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') 
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
 # Whitenoise statik fayllarni serverda ishlatish uchun
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+
+# ⭐️ MEDIA/FAYL SOZLAMALARI (BUNNY.NET UCHUN)
+if not DEBUG:
+    # Production uchun (Fayllarni Bunny Storage'ga yo'naltiramiz)
+    
+    # S3 protokoli bilan ishlash uchun
+    AWS_S3_REGION_NAME = config('BUNNY_REGION') # Masalan, 'ny' yoki 'sg'
+    AWS_S3_ENDPOINT_URL = config('BUNNY_ENDPOINT_URL') # Masalan, 'https://ny.storage.bunnycdn.com'
+    
+    # API Kalitlari (Bunny Storage API kalitlari)
+    AWS_ACCESS_KEY_ID = config('BUNNY_ACCESS_KEY')
+    AWS_SECRET_ACCESS_KEY = config('BUNNY_SECRET_KEY') # Aslida S3'da talab qilinmasa ham, ko'pincha qo'shiladi
+    
+    AWS_STORAGE_BUCKET_NAME = config('BUNNY_STORAGE_ZONE_NAME') # Bunny'da yaratilgan Storage Zone nomi
+    
+    # Fayl Saqlash Manzilini Belgilash
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    
+    # Fayllarning Internetdagi URL Manzili (CDN Pull Zone orqali)
+    # Masalan: https://cdn.bunny.net/sizning-pull-zone-ingiz/
+    AWS_S3_CUSTOM_DOMAIN = config('BUNNY_CDN_PULL_ZONE_HOST')
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+    
+    # Fayl nomlariga regionni qo'shishni o'chirish
+    AWS_S3_FILE_OVERWRITE = False
+    
+    # CKEditor Yuklash Yo'li (Avtomatik Bunny ga yuklanadi)
+    CKEDITOR_UPLOAD_PATH = 'media/uploads/' # Bunny ichidagi papka
+    
+else:
+    # Lokal rivojlanish uchun
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    CKEDITOR_UPLOAD_PATH = "uploads/"
 # ----------------------------------------------------
 # BOSHQA SOZLAMALAR
 # ----------------------------------------------------
