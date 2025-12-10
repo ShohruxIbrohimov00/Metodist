@@ -87,11 +87,10 @@ else:
         'default': dj_database_url.config(
             default=config('DATABASE_URL'),
             conn_max_age=600,  # Ulanish vaqtini cheklash
-            # ✨ MUHIM TUZATISH: Render uchun SSL ulanishni majburlash (DB Xatosini bartaraf etish uchun)
+            # ✨ TUZATISH: OPTIONS argumentini to'g'ri uzatish
             OPTIONS={'sslmode': 'require'}
         )
     }
-
 # ----------------------------------------------------
 # KESH (DUMMY/LOCMEM CACHING - RESURSLARNI TEJASH UCHUN)
 # ----------------------------------------------------
