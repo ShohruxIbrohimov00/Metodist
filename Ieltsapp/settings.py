@@ -150,16 +150,18 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # ⭐️ MEDIA/FAYL SOZLAMALARI (BUNNY.NET UCHUN)
+# ⭐️ MEDIA/FAYL SOZLAMALARI (BUNNY.NET UCHUN)
 if not DEBUG:
     # Production uchun (Fayllarni Bunny Storage'ga yo'naltiramiz)
     
     # S3 protokoli bilan ishlash uchun
-    AWS_S3_REGION_NAME = config('BUNNY_REGION') # Masalan, 'ny' yoki 'sg'
-    AWS_S3_ENDPOINT_URL = config('BUNNY_ENDPOINT_URL') # Masalan, 'https://ny.storage.bunnycdn.com'
+    AWS_S3_REGION_NAME = config('BUNNY_REGION') 
+    AWS_S3_ENDPOINT_URL = config('BUNNY_ENDPOINT_URL') 
     
     # API Kalitlari (Bunny Storage API kalitlari)
     AWS_ACCESS_KEY_ID = config('BUNNY_ACCESS_KEY')
-    AWS_SECRET_ACCESS_KEY = config('BUNNY_SECRET_KEY') # Aslida S3'da talab qilinmasa ham, ko'pincha qo'shiladi
+    # Xato tuzatildi: Bunny.net'ning bitta kalitini Secret Key o'rniga ham ishlatish
+    AWS_SECRET_ACCESS_KEY = config('BUNNY_ACCESS_KEY') 
     
     AWS_STORAGE_BUCKET_NAME = config('BUNNY_STORAGE_ZONE_NAME') # Bunny'da yaratilgan Storage Zone nomi
     
@@ -167,7 +169,6 @@ if not DEBUG:
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     
     # Fayllarning Internetdagi URL Manzili (CDN Pull Zone orqali)
-    # Masalan: https://cdn.bunny.net/sizning-pull-zone-ingiz/
     AWS_S3_CUSTOM_DOMAIN = config('BUNNY_CDN_PULL_ZONE_HOST')
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
     
@@ -175,7 +176,8 @@ if not DEBUG:
     AWS_S3_FILE_OVERWRITE = False
     
     # CKEditor Yuklash Yo'li (Avtomatik Bunny ga yuklanadi)
-    CKEDITOR_UPLOAD_PATH = 'media/uploads/' # Bunny ichidagi papka
+    # CKEditor'da yuklanadigan barcha fayllar Bunny'da shu papkaga tushadi
+    CKEDITOR_UPLOAD_PATH = 'media/uploads/' 
     
 else:
     # Lokal rivojlanish uchun
