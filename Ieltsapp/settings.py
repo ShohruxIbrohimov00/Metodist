@@ -115,34 +115,33 @@ else:
 # ----------------------------------------------------
 # STATIC FILES (WhiteNoise)
 # ----------------------------------------------------
+# STATIC FILES (WhiteNoise)
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# ----------------------------------------------------
-# MEDIA FILES — BUNNY.NET (python-bunnycdn-storages)
-# ----------------------------------------------------
+# MEDIA FILES — BUNNY.NET (Production)
 if not DEBUG:
-    # Production → Bunny.net
-    DEFAULT_FILE_STORAGE = 'bunnycdn_storages.BunnyCDNStorage'
+    # Bu paket GitHub dan oʻrnatildi, shuning uchun nomi django_bunny
+    DEFAULT_FILE_STORAGE = 'django_bunny.storage.BunnyStorage'
 
-    BUNNY_STORAGE_ZONE = config('BUNNY_STORAGE_ZONE_NAME')        # masalan: satmakonvideolari
-    BUNNY_API_KEY = config('BUNNY_STORAGE_PASSWORD')             # <<< FTP & API Access → Password !!!
-    BUNNY_CDN_HOSTNAME = config('BUNNY_CDN_PULL_ZONE_HOST')       # masalan: satmakon-cdn.b-cdn.net
+    # Bunny.net sozlamalari
+    BUNNY_ZONE_NAME = config('BUNNY_STORAGE_ZONE_NAME')          # satmakonvideolari
+    BUNNY_API_KEY     = config('BUNNY_STORAGE_PASSWORD')         # <<< FTP & API Access → Password !!!
+    BUNNY_CDN_HOST    = config('BUNNY_CDN_PULL_ZONE_HOST')       # satmakon-cdn.b-cdn.net
 
-    MEDIA_URL = f"https://{BUNNY_CDN_HOSTNAME}/"
-    BUNNY_BASE_DIRECTORY = "uploads/"  # CKEditor va barcha media fayllar shu papkaga tushadi
+    MEDIA_URL = f"https://{BUNNY_CDN_HOST}/"
+    BUNNY_DIRECTORY = "uploads/"   # CKEditor va barcha media shu papkaga tushadi
 
-    # CKEditor uchun ham shu yoʻl ishlaydi
+    # CKEditor ham shu joydan ishlasin
     CKEDITOR_UPLOAD_PATH = "uploads/"
 
 else:
-    # Lokal rivojlanish
+    # Local
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     CKEDITOR_UPLOAD_PATH = "uploads/"
-
 # ----------------------------------------------------
 # LOGGING (xatoliklarni koʻrish uchun)
 # ----------------------------------------------------
