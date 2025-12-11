@@ -113,35 +113,29 @@ else:
     CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000', 'https://localhost:8000']
 
 # ----------------------------------------------------
-# STATIC FILES (WhiteNoise)
-# ----------------------------------------------------
-# STATIC FILES (WhiteNoise)
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
 # MEDIA FILES — BUNNY.NET (Production)
+# ----------------------------------------------------
 if not DEBUG:
-    # Bu paket GitHub dan oʻrnatildi, shuning uchun nomi django_bunny
+    # To'g'ri backend nomi
     DEFAULT_FILE_STORAGE = 'django_bunny_storage.storage.BunnyStorage'
 
-    # Bunny.net sozlamalari
-    BUNNY_ZONE_NAME = config('BUNNY_STORAGE_ZONE_NAME')          # satmakonvideolari
-    BUNNY_API_KEY     = config('BUNNY_STORAGE_PASSWORD')         # <<< FTP & API Access → Password !!!
-    BUNNY_CDN_HOST    = config('BUNNY_CDN_PULL_ZONE_HOST')       # satmakon-cdn.b-cdn.net
+    # Bu paket faqat quyidagi nomlarni o'qiydi:
+    BUNNY_USERNAME = config('BUNNY_STORAGE_ZONE_NAME')     # satmakonvideolari
+    BUNNY_PASSWORD = config('BUNNY_STORAGE_PASSWORD')      # FTP & API Access → Password !!!
+    BUNNY_REGION   = config('BUNNY_REGION', default='de')  # de, ny, la...
 
-    MEDIA_URL = f"https://{BUNNY_CDN_HOST}/"
-    BUNNY_DIRECTORY = "uploads/"   # CKEditor va barcha media shu papkaga tushadi
+    # CDN URL
+    MEDIA_URL = f"https://{config('BUNNY_CDN_PULL_ZONE_HOST')}/"
 
-    # CKEditor ham shu joydan ishlasin
+    # Fayllar qaysi papkaga tushadi
+    BUNNY_BASE_DIR = "uploads/"
     CKEDITOR_UPLOAD_PATH = "uploads/"
 
 else:
-    # Local
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     CKEDITOR_UPLOAD_PATH = "uploads/"
+    
 # ----------------------------------------------------
 # LOGGING (xatoliklarni koʻrish uchun)
 # ----------------------------------------------------
