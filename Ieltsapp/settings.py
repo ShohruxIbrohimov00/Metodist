@@ -113,6 +113,14 @@ else:
     CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000', 'https://localhost:8000']
 
 # ----------------------------------------------------
+# STATIC FILES — HAR DOIM BOʻLSIN! (ENG MUHIM!)
+# ----------------------------------------------------
+STATIC_URL = '/static/'                                          # ← BU QATOR HAR DOIM BOʻLSIN!
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# ----------------------------------------------------
 # MEDIA FILES — BUNNY.NET (Production)
 # ----------------------------------------------------
 if not DEBUG:
