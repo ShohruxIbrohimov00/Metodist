@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'django_bleach',
     'crispy_forms',
-    # 'storages' — endi kerak emas, oʻchirib tashladim
+    'django_bunny_storage',
 ]
 
 # ----------------------------------------------------
@@ -124,7 +124,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # MEDIA FILES — BUNNY.NET (Production)
 if not DEBUG:
     # Bu paket GitHub dan oʻrnatildi, shuning uchun nomi django_bunny
-    DEFAULT_FILE_STORAGE = 'django_bunny.storage.BunnyStorage'
+    DEFAULT_FILE_STORAGE = 'django_bunny_storage.storage.BunnyStorage'
 
     # Bunny.net sozlamalari
     BUNNY_ZONE_NAME = config('BUNNY_STORAGE_ZONE_NAME')          # satmakonvideolari
