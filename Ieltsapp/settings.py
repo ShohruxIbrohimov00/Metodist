@@ -133,7 +133,7 @@ if not DEBUG:
     BUNNY_REGION   = config('BUNNY_REGION', default='de')  # de, ny, la...
 
     # CDN URL
-    MEDIA_URL = f"https://{config('BUNNY_CDN_PULL_ZONE_HOST')}/"
+    MEDIA_URL = ''
 
     # Fayllar qaysi papkaga tushadi
     BUNNY_BASE_DIR = "uploads/"
