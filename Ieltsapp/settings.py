@@ -132,9 +132,13 @@ if not DEBUG:
     BUNNY_PASSWORD = config('BUNNY_STORAGE_PASSWORD')      # FTP & API Access → Password !!!
     BUNNY_REGION   = config('BUNNY_REGION', default='de')  # de, ny, la...
 
-    MEDIA_URL = 'https://' + config('BUNNY_CDN_PULL_ZONE_HOST') + '/media/'
-    # Fayllar qaysi papkaga tushadi
-    BUNNY_BASE_DIR = "uploads/"
+    # MUHIM: MEDIA_URL CDN Pull Zone bo'lishi kerak, storage zone emas!
+    BUNNY_CDN_HOSTNAME = config('BUNNY_CDN_PULL_ZONE_HOST')  # masalan: satmakon.b-cdn.net
+    MEDIA_URL = f'https://{BUNNY_CDN_HOSTNAME}/'
+    
+    # Fayllar qaysi papkaga tushadi (agar kerak bo'lsa)
+    # BUNNY_BASE_DIR = "uploads/"  # Bu qatorni olib tashlang yoki bo'sh qoldiring
+    
     CKEDITOR_UPLOAD_PATH = "uploads/"
 
 else:
