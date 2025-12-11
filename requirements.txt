@@ -19,6 +19,6 @@ pillow==11.3.0
 psycopg2-binary
 python-decouple==3.8
 whitenoise==6.11.0
-
-# Bunny.net uchun 100% ishlaydigan paket (GitHub dan)
+requests
 -e git+https://github.com/willmeyers/django-bunny-storage.git@main#egg=django-bunny-storage
+
