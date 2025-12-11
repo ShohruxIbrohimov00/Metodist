@@ -132,9 +132,6 @@ if not DEBUG:
     BUNNY_PASSWORD = config('BUNNY_STORAGE_PASSWORD')      # FTP & API Access → Password !!!
     BUNNY_REGION   = config('BUNNY_REGION', default='de')  # de, ny, la...
 
-    # CDN URL
-    MEDIA_URL = ''
-
     # Fayllar qaysi papkaga tushadi
     BUNNY_BASE_DIR = "uploads/"
     CKEDITOR_UPLOAD_PATH = "uploads/"
