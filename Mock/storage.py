@@ -144,3 +144,29 @@ class BunnyStorage(Storage):
         Fayl o'zgartirilgan vaqtini qaytarish (Bunny.net da mavjud emas)
         """
         return None
+
+
+# ----------------------------------------------------
+# MEDIA FILES — BUNNY.NET (Production)
+# ----------------------------------------------------
+if not DEBUG:
+    # Custom storage class ishlatamiz
+    DEFAULT_FILE_STORAGE = 'Mock.storage.BunnyStorage'
+
+    # Bunny sozlamalari
+    BUNNY_STORAGE_ZONE_NAME = config('BUNNY_STORAGE_ZONE_NAME')  # satmakonvideolari
+    BUNNY_STORAGE_PASSWORD = config('BUNNY_STORAGE_PASSWORD')    # 761c7518-e520-416b-8f7af941bf23-d285-4374
+    BUNNY_REGION = config('BUNNY_REGION', default='de')          # de
+    BUNNY_CDN_HOSTNAME = config('BUNNY_CDN_PULL_ZONE_HOST')      # satmakon-cdn.b-cdn.net
+
+    # MUHIM: MEDIA_URL CDN Pull Zone bo'lishi kerak
+    MEDIA_URL = f'https://{BUNNY_CDN_HOSTNAME}/'
+    
+    # CKEditor uploads
+    CKEDITOR_UPLOAD_PATH = "uploads/"
+
+else:
+    # Local development uchun
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    CKEDITOR_UPLOAD_PATH = "uploads/"
