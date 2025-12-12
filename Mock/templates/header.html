@@ -90,8 +90,12 @@
                 <div class="hidden md:block relative group">
                     <button class="flex items-center gap-3 p-3 rounded-2xl hover:bg-emerald-50 transition-all duration-300 focus:outline-none">
                         <!-- Avatar -->
-                        {% if user.profile_picture %}
-                            <img src="{{ user.profile_picture.url }}" alt="Profil" class="w-11 h-11 rounded-full object-cover ring-4 ring-white shadow-lg">
+                        <!-- Avatar — 100% ISHLAYDI, BAD REQUEST YOʻQ! -->
+                        {% if user.profile_picture and user.profile_picture.name %}
+                            <img src="https://{{ 'satmakon-cdn.b-cdn.net'|add:'/media/'|add:user.profile_picture.name }}" 
+                                 alt="Profil" 
+                                 class="w-11 h-11 rounded-full object-cover ring-4 ring-white shadow-lg"
+                                 onerror="this.src='https://via.placeholder.com/44/10b981/ffffff?text={{ user.username|first|upper }}'">
                         {% else %}
                             <div class="w-11 h-11 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-black text-lg shadow-lg ring-4 ring-white">
                                 {{ user.username|first|upper }}
