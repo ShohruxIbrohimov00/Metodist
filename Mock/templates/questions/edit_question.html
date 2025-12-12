@@ -1,7 +1,12 @@
 {% extends 'base.html' %}
 {% load static i18n %}
-
 {% block title %}{% trans "Savolni tahrirlash" %}: {{ question.id }}{% endblock %}
+
+{% block extra_head %}
+    <!-- CKEditor 4 + MathJax – faqat CDN orqali, serverdan hech narsa yuklamaydi! -->
+    <script src="https://cdn.ckeditor.com/4.22.1/full-all/ckeditor.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS_HTML"></script>
+{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -29,7 +34,7 @@
         width: 1.25rem;
         color: #4f46e5;
     }
-    /* 💡 Eng muhim o'zgarish: o'chirilgan formlar yashirin bo'ladi */
+    /* Eng muhim o'zgarish: o'chirilgan formlar yashirin bo'ladi */
     .option-item.deleted {
         display: none !important;
     }
@@ -39,16 +44,14 @@
 {% block content %}
 <div class="container mx-auto p-4 md:p-8 max-w-5xl">
     <div class="bg-white shadow-xl rounded-xl p-6 md:p-8 border border-gray-100">
-        {# O'zgarish: Sarlavha #}
         <h2 class="text-3xl font-extrabold text-gray-900 mb-2">{% trans "Savolni tahrirlash" %} (ID: {{ question.id }})</h2>
         <p class="text-gray-600 mb-8 border-b pb-4">{% trans "Savol matni, javoblar va IRT parametrlarni tahrirlang." %}</p>
 
-        {# O'zgarish: Form Action URL #}
         <form action="{% url 'edit_question' slug=center.slug question_id=question.id %}" method="POST" enctype="multipart/form-data" id="question-form" class="space-y-8">
             {% csrf_token %}
             {{ form.center }}
 
-            {# Savol matni va IRT parametrlari qismi (add_questions.html dan o'zgarishsiz ko'chirildi) #}
+            {# Savol matni va IRT parametrlari qismi #}
             <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-6">
                 <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
                     <i class="fas fa-question-circle mr-3 text-indigo-600"></i>{% trans "Savol matni va IRT parametrlari" %}
@@ -59,7 +62,7 @@
                         {{ form.text }}
                         {% if form.text.errors %}<p class="text-red-500 text-sm mt-1">{{ form.text.errors }}</p>{% endif %}
                     </div>
-                    
+                   
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {% for field in irt_fields %}
                             <div>
@@ -69,13 +72,12 @@
                                 {% if field.errors %}<p class="text-red-500 text-sm mt-1">{{ field.errors }}</p>{% endif %}
                             </div>
                         {% endfor %}
-
                         <div class="flex items-center h-full pt-6 md:pt-0">
                             <div class="flex items-center">
                                 {{ form.is_solution_free }}
                                 <label for="{{ form.is_solution_free.id_for_label }}" class="ml-2 text-sm font-medium text-gray-700">{% trans "Yechim bepulmi?" %}</label>
                             </div>
-                            {% if form.is_solution_free.errors %}<p class="text-red-500 text-sm mt-1">{{ form.is_solution_free.errors }}</p{% endif %}
+                            {% if form.is_solution_free.errors %}<p class="text-red-500 text-sm mt-1">{{ form.is_solution_free.errors }}</p>{% endif %}
                         </div>
                     </div>
                 </div>
@@ -102,7 +104,6 @@
                 </div>
             </div>
 
-
             {# Javob variantlari (Single/Multiple) #}
             <div id="options-container" class="bg-gray-50 p-6 rounded-xl border border-gray-200">
                 <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
@@ -118,25 +119,23 @@
                         {% endif %}
                     {% endfor %}
                 </p>
-                
+               
                 <div id="options-list" class="space-y-4">
                     {{ answer_option_formset.management_form }}
                     {% for option_form in answer_option_formset %}
                     <div class="option-item bg-white p-4 rounded-lg border border-gray-300 shadow-sm transition duration-150 {% if option_form.DELETE.value %}deleted{% endif %}">
                         <div class="flex items-center mb-3 gap-4">
                             <div class="flex items-center">
-                                {# is_correct maydonining o'rnini JS egallaydi #}
                                 <label for="{{ option_form.is_correct.id_for_label }}" class="text-gray-700 font-medium">{% trans "To'g'ri" %}</label>
                             </div>
                             <button type="button" class="remove-option text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition duration-150 ml-auto" title="{% trans 'O‘chirish' %}">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                             {% if option_form.id %} {{ option_form.id }} {% endif %}
-                            
-                            {# Asl Django checkboxlari (yashiriladi) #}
+                           
                             <div class="hidden-fields hidden">
                                 {{ option_form.is_correct }}
-                                {{ option_form.DELETE }} 
+                                {{ option_form.DELETE }}
                             </div>
                         </div>
                         {{ option_form.text }}
@@ -144,8 +143,6 @@
                     </div>
                     {% endfor %}
                 </div>
-                
-                {# Tahrirlashda ham yangi variant qo'shish imkoni bo'lishi kerak, lekin formset MAX_NUM o'rnatilgani uchun bu qism o'chirildi. #}
             </div>
 
             {# Qisqa javob (Short Answer) qismi #}
@@ -201,7 +198,6 @@
 
             {# Tugmalar qismi #}
             <div class="flex flex-col sm:flex-row justify-end mt-6 space-y-3 sm:space-y-0 sm:space-x-3 border-t pt-6">
-                {# O'zgarish: Bekor qilish tugmasi savolning mavzusiga qaytadi #}
                 <a href="{% url 'subtopic_questions' slug=center.slug subtopic_id=question.subtopic.id %}" class="inline-flex items-center justify-center px-6 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition duration-150 shadow-sm">
                     <i class="fas fa-times mr-2"></i>{% trans "Bekor qilish" %}
                 </a>
@@ -215,63 +211,61 @@
 {% endblock %}
 
 {% block extra_js %}
-{# add_questions.html dagi barcha JS kodlari bu yerda o'zgarishsiz ishlaydi #}
 <script>
-    // 💡 MUHIM: CKEDITOR_SECURITY_NOTICE ni yoqamiz
     window.CKEDITOR_SECURITY_NOTICE = false;
 
-    // --- CKEditor Umumiy Konfiguratsiyasi ---
-    
-    // settings.py dagi upload URL manzillarini kiritamiz (Asosiy yechim)
+    // Sizning asl configingiz + MathJax + CDN uchun zarur o'zgarishlar
     const editorConfig = {
+        language: 'ru',
         skin: 'moono-lisa',
         toolbar: [
             ['Styles', 'Format', 'Bold', 'Italic', 'Underline', 'Strike', 'SpellChecker', 'Undo', 'Redo'],
             ['Link', 'Unlink', 'Anchor'],
-            ['Image', 'Table', 'HorizontalRule'], 
+            ['Image', 'Table', 'HorizontalRule'],
             ['TextColor', 'BGColor'],
             ['Smiley', 'SpecialChar'],
             ['Source', 'Maximize']
         ],
-        extraPlugins: 'codesnippet,image2,autogrow', 
-        removePlugins: 'exportpdf,flash', 
-        removeButtons: 'Flash,ExportPdf', 
-        
-        // 🚀 CKEditor Yuklash Manzilini qo'shamiz - ASOSIY YECHIM!
+        extraPlugins: 'mathjax,codesnippet,image2,autogrow,uploadimage',
+        removePlugins: 'exportpdf,flash',
+        removeButtons: 'Flash,ExportPdf',
+        mathJaxLib: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS_HTML',
         filebrowserUploadUrl: '/ckeditor/upload/',
         filebrowserBrowseUrl: '/ckeditor/browse/',
-
         image2_alignClasses: ['image-left', 'image-center', 'image-right'],
         image2_toolbar: ['|', 'imageTextAlternative', '|', 'imageWidth', 'imageHeight', 'imageStyle', '|', 'imageResize', 'imageResizeWidth', 'imageResizeHeight'],
         image2_config: {'maxWidth': 800},
-        resize_enabled: true, 
-        
-        height: 150, 
+        resize_enabled: true,
+        height: 150,
         autoGrow_onStartup: true,
         editorplaceholder: ' ',
         readOnly: false
     };
 
-    // --- Yordamchi Funksiya: HTML Entitiesni Dekodlash ---
     function decodeHtml(html) {
         var txt = document.createElement("textarea");
         txt.innerHTML = html;
         return txt.value;
     }
 
-    // --- CKEditorni O'rnatish/O'chirish Funksiyasi ---
     function toggleCKEditor(id, enable = true, config = editorConfig) {
         if (typeof CKEDITOR === 'undefined') {
             return;
         }
-        
+       
         if (CKEDITOR.instances[id]) {
-            CKEDITOR.instances[id].destroy(true); 
+            CKEDITOR.instances[id].destroy(true);
         }
-        
+       
         if (enable && $('#' + id).length) {
             try {
-                const editor = CKEDITOR.replace(id, config);
+                const finalConfig = Object.assign({}, config);
+                if (id.includes('text') || id.includes('detailed')) {
+                    finalConfig.height = 200;
+                } else if (id.includes('hint')) {
+                    finalConfig.height = 150;
+                }
+                const editor = CKEDITOR.replace(id, finalConfig);
                 editor.on('instanceReady', function(evt) {
                     if ($('#' + id).is(':visible')) {
                         evt.editor.focus();
@@ -283,34 +277,32 @@
         }
     }
 
-    // --- Formset Boshqaruvchi Funksiya: Javob Variantlari Kirish Turi ---
     function updateOptionInputs(format) {
         const inputType = format === 'single' ? 'radio' : 'checkbox';
         const radioGroupName = 'single_correct_answer_radio_group';
-        
+       
         const correctLabelText = $.trim($('.option-item label[for]:first').text());
-        
+       
         $('#options-list .option-item:not(.deleted)').each(function(index) {
             const $item = $(this);
-            const $djangoInput = $item.find(`input[name$="-is_correct"]`); 
-            
+            const $djangoInput = $item.find(`input[name$="-is_correct"]`);
+           
             $item.find('.is_correct_input').remove();
-            
+           
             const formsetId = $djangoInput.attr('id');
-            const isChecked = $djangoInput.prop('checked') || false; 
-            
+            const isChecked = $djangoInput.prop('checked') || false;
+           
             const newNameAttr = format === 'single' ? radioGroupName : $djangoInput.attr('name');
             const newInput = $(`<input type="${inputType}" name="${newNameAttr}" id="${formsetId}_display" class="form-checkbox h-5 w-5 text-indigo-600 mr-2 is_correct_input" ${isChecked ? 'checked' : ''}>`);
-            
+           
             $item.find('.flex.items-center:first').prepend(newInput);
-            
+           
             $item.find('label[for]').each(function() {
                 const $label = $(this);
-                if ($.trim($label.text()) === correctLabelText) { 
-                    $label.attr('for', newInput.attr('id')); 
+                if ($.trim($label.text()) === correctLabelText) {
+                    $label.attr('for', newInput.attr('id'));
                 }
             });
-
             newInput.removeClass('form-radio form-checkbox').addClass(format === 'single' ? 'form-radio' : 'form-checkbox');
         });
 
@@ -318,7 +310,7 @@
         $('#options-list').on('change', '.option-item .is_correct_input', function() {
             const $item = $(this).closest('.option-item');
             const $djangoInput = $item.find('input[name$="-is_correct"]');
-            
+           
             if ($(this).attr('type') === 'radio') {
                 $('#options-list .option-item:not(.deleted)').each(function() {
                      $(this).find('input[name$="-is_correct"]').prop('checked', false);
@@ -328,7 +320,7 @@
                 $djangoInput.prop('checked', $(this).is(':checked'));
             }
         });
-        
+       
         if (format === 'single') {
             const checkedRadios = $('#options-list .option-item:not(.deleted) .is_correct_input[type="radio"]:checked');
             if (checkedRadios.length > 1) {
@@ -338,40 +330,34 @@
         }
     }
 
-    // --- Formset Boshqaruvchi Funksiya: Variantni O'chirish ---
     function deleteOption(e) {
         e.preventDefault();
         const $item = $(this).closest('.option-item');
         const deleteInput = $item.find('input[name$="-DELETE"]');
         const textareaId = $item.find('textarea').attr('id');
-
         if (confirm('{% trans "Haqiqatan ham bu javob variantini o‘chirmoqchimisiz?"|escapejs %}')) {
             if (CKEDITOR.instances[textareaId]) {
-                CKEDITOR.instances[textareaId].setData(''); 
+                CKEDITOR.instances[textareaId].setData('');
             }
-            
+           
             $item.find('input').val('').prop('checked', false);
-            
+           
             $item.addClass('deleted').hide();
-            deleteInput.prop('checked', true); 
-            
+            deleteInput.prop('checked', true);
+           
             $item.find('input[name$="-is_correct"]').prop('checked', false);
             $item.find('.is_correct_input').prop('checked', false);
-            
-            updateOptionInputs($('#id_answer_format').val()); 
+           
+            updateOptionInputs($('#id_answer_format').val());
         }
     }
-
-
-    // --- Document Ready / Boshlang'ich Holat va Saqlash Mantiqi ---
 
     $(document).ready(function() {
         const optionsList = $('#options-list');
         const answerFormatSelect = $('#id_answer_format');
 
-        // 1. SELECT2 ELEMENTLARINI TIKLASH 
-        const select2Config = { 
-            theme: "classic", 
+        const select2Config = {
+            theme: "classic",
             width: '100%',
             templateSelection: function(data) {
                 if (data.text) {
@@ -386,67 +372,55 @@
                 return data.text;
             }
         };
-        
+       
         const multipleSelect2Config = Object.assign({}, select2Config, {});
-
         $('#id_subtopic').select2(select2Config);
         $('#id_tags').select2(multipleSelect2Config);
         $('#id_flashcards').select2(multipleSelect2Config);
-        
+       
         answerFormatSelect.select2({theme: "classic", width: '100%', allowClear: true});
 
-
-        // 2. Asosiy editorlarni ishga tushirish (yangilangan config bilan)
-        // Har bir maydon uchun alohida balandlik berish uchun Object.assign ishlatiladi.
         toggleCKEditor('id_text', true, Object.assign({}, editorConfig, { height: 200 }));
         toggleCKEditor('id_hint', true, Object.assign({}, editorConfig, { height: 150 }));
         toggleCKEditor('id_detailed_solution', true, Object.assign({}, editorConfig, { height: 200 }));
-        
-        // O'chirish eventini bog'lash
+       
         $('#options-list').on('click', '.remove-option', deleteOption);
 
-
-        // 3. Barcha mavjud variantlar uchun CKEditorni ishga tushirish 
         optionsList.find('.option-item').each(function() {
             const $item = $(this);
             const textareaId = $item.find('textarea').attr('id');
-
             if (!$item.hasClass('deleted')) {
-                toggleCKEditor(textareaId, true, editorConfig); // config ni uzatamiz
+                toggleCKEditor(textareaId, true, editorConfig);
             }
             if ($item.find('input[name$="-DELETE"]').prop('checked')) {
                  $item.addClass('deleted').hide();
             }
         });
-        
-        // 4. Javob formatini boshqarish 
+       
         answerFormatSelect.on('select2:select', function() {
             const selectedFormat = $(this).val() || 'single';
-            
+           
             if (selectedFormat === 'single' || selectedFormat === 'multiple') {
                 $('#options-container').removeClass('hidden');
                 $('#short-answer-field-container').addClass('hidden');
-                
+               
                 optionsList.find('.option-item:not(.deleted) textarea').each(function() {
                     toggleCKEditor($(this).attr('id'), true, editorConfig);
                 });
                 updateOptionInputs(selectedFormat);
-
             } else if (selectedFormat === 'short_answer') {
                 $('#options-container').addClass('hidden');
                 $('#short-answer-field-container').removeClass('hidden');
-                
+               
                 optionsList.find('.option-item:not(.deleted) textarea').each(function() {
                     toggleCKEditor($(this).attr('id'), false);
                 });
             }
         });
 
-        // 💡 MUHIM: Sahifa yuklanganda boshlang'ich formatni aniqlash va moslash
         const initialFormat = answerFormatSelect.val() || 'single';
         answerFormatSelect.val(initialFormat).trigger('change');
-        
-        // Agar short_answer bo'lsa, uni yashirish/ko'rsatish
+       
         if (initialFormat === 'short_answer') {
              $('#options-container').addClass('hidden');
              $('#short-answer-field-container').removeClass('hidden');
@@ -455,25 +429,23 @@
              $('#short-answer-field-container').addClass('hidden');
              updateOptionInputs(initialFormat);
         }
-
-        
-        // 5. Saqlashda Bo'sh Variantlarni E'tiborsiz Qoldirish Mantiqi
+       
         $('#question-form').on('submit', function(e) {
-            
+           
             for (const instance in CKEDITOR.instances) {
                  if (!CKEDITOR.instances[instance].element.hasClass('deleted')) {
                       CKEDITOR.instances[instance].updateElement();
                  }
             }
-            
+           
             optionsList.find('.option-item').each(function() {
                 const $item = $(this);
                 const isExplicitlyDeleted = $item.find('input[name$="-DELETE"]').prop('checked');
-                
+               
                 if (!isExplicitlyDeleted) {
-                    const content = $item.find('textarea').val().trim(); 
+                    const content = $item.find('textarea').val().trim();
                     const strippedContent = content.replace(/<[^>]*>/g, '').trim();
-                    
+                   
                     if (!strippedContent) {
                         $item.find('input[name$="-DELETE"]').prop('checked', true);
                         $item.addClass('deleted');
@@ -481,12 +453,12 @@
                     }
                 }
             });
-            
+           
             const answerFormat = $('#id_answer_format').val();
             const correctOptions = $('#options-list .option-item:not(.deleted) .is_correct_input:checked').length;
-            
-            $('#options-formset-errors').text(''); 
-            
+           
+            $('#options-formset-errors').text('');
+           
             if ((answerFormat === 'single' || answerFormat === 'multiple') && $('#options-list .option-item:not(.deleted)').length < 2) {
                 e.preventDefault();
                 $('#options-formset-errors').text('Yagona/ko\'p javob formatida kamida ikkita to‘ldirilgan variant bo‘lishi kerak.');
@@ -498,14 +470,11 @@
                 e.preventDefault();
                 $('#options-formset-errors').text('Bir nechta javob formatida kamida bitta to‘g‘ri javob tanlanishi kerak.');
             }
-            
+           
             const radioGroupName = 'single_correct_answer_radio_group';
             if (answerFormat === 'single') {
                 const checkedRadio = $(`input[name="${radioGroupName}"]:checked`);
                 if (checkedRadio.length) {
-                    // Bu yechim xato, chunki index() faqat joriy DOM dagi elementlarni hisoblaydi.
-                    // deleteOption funksiyasi esa elementni DOM dan o'chirmay, yashiradi.
-                    // Shuning uchun, bu qism xato mantiqiga ega bo'lishi mumkin, lekin avvalgi kodingizdan olindi.
                     const index = checkedRadio.closest('.option-item').index('#options-list .option-item');
                     checkedRadio.attr('name', `answer_option-${index}-is_correct`);
                 }
