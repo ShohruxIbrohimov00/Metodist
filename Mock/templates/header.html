@@ -92,8 +92,8 @@
                         <!-- Avatar -->
                         <!-- Avatar — 100% ISHLAYDI, RASMLAR KOʻRINADI! -->
                         {% if user.profile_picture %}
-                            <img src="https://{{ 'satmakon-cdn.b-cdn.net' }}/profile_pics/{{ user.profile_picture.name|cut:'profile_pics/' }}" 
-                                 alt="Profil" 
+                            <img src="https://satmakon-cdn.b-cdn.net/{{ user.profile_picture }}" 
+                                 alt="Profil"
                                  class="w-11 h-11 rounded-full object-cover ring-4 ring-white shadow-lg"
                                  onerror="this.src='https://via.placeholder.com/44/10b981/ffffff?text={{ user.username|first|upper }}'">
                         {% else %}
