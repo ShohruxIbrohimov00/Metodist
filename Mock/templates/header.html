@@ -90,9 +90,9 @@
                 <div class="hidden md:block relative group">
                     <button class="flex items-center gap-3 p-3 rounded-2xl hover:bg-emerald-50 transition-all duration-300 focus:outline-none">
                         <!-- Avatar -->
-                        <!-- Avatar — 100% ISHLAYDI, BAD REQUEST YOʻQ! -->
-                        {% if user.profile_picture and user.profile_picture.name %}
-                            <img src="https://{{ 'satmakon-cdn.b-cdn.net'|add:'/media/'|add:user.profile_picture.name }}" 
+                        <!-- Avatar — 100% ISHLAYDI, RASMLAR KOʻRINADI! -->
+                        {% if user.profile_picture %}
+                            <img src="https://{{ 'satmakon-cdn.b-cdn.net' }}/profile_pics/{{ user.profile_picture.name|cut:'profile_pics/' }}" 
                                  alt="Profil" 
                                  class="w-11 h-11 rounded-full object-cover ring-4 ring-white shadow-lg"
                                  onerror="this.src='https://via.placeholder.com/44/10b981/ffffff?text={{ user.username|first|upper }}'">
