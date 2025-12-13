@@ -227,3 +227,4 @@ LOGIN_REDIRECT_URL = '/redirect/'
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 CRISPY_TEMPLATE_PACK = "uni_form"
+CKEDITOR_BASEPATH = f"{STATIC_URL}ckeditor/ckeditor/"
