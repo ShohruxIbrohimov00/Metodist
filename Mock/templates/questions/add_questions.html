@@ -211,8 +211,10 @@
     </div>
 </div>
 {% endblock %}
-{{ form.media }}
+
 {% block extra_js %}
+{{ form.media }}
+<script src="{% static 'js/add_question_custom.js' %}"></script>
 <script>
     // 💡 MUHIM: CKEDITOR_SECURITY_NOTICE ni yoqamiz
     window.CKEDITOR_SECURITY_NOTICE = false;
