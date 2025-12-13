@@ -195,40 +195,47 @@ USE_TZ = True
 # CKEditor Sozlamalari 
 CKEDITOR_IMAGE_BACKEND = "pillow" # BU YERDA CKEDITOR_UPLOAD_PATH BO'LMASLIGI KERAK!
 
-# CKEditor Sozlamalari
-
-# ... (boshqa sozlamalar) ...
-
 CKEDITOR_CONFIGS = {
-    'default': {
-        'skin': 'moono-lisa', 'toolbar_Basic': [['Source', '-', 'Bold', 'Italic']],
-        'filebrowserUploadUrl': '/ckeditor/upload/', 'filebrowserBrowseUrl': '/ckeditor/browse/',
-        
-        # ✅ TUZATISH 1: `image2` va rasm yuklash (uploadimage) ni qo'shish
-        # `uploadimage` ni qo'shing. Barcha plugin nomlari vergul bilan ajratilgan, list emas:
-        'extraPlugins': 'codesnippet,image2,autogrow,uploadimage', 
-        
-        # ✅ TUZATISH 2: `image` eski dialogini o'chirish (konfliktni yechish uchun)
+    'default': {
+        'skin': 'moono-lisa', 
+        'toolbar_Basic': [['Source', '-', 'Bold', 'Italic']],
+        'filebrowserUploadUrl': '/ckeditor/upload/', 
+        'filebrowserBrowseUrl': '/ckeditor/browse/',
+        
+        # Pluginlar ro'yxati (Konfliktlar tuzatildi)
+        'extraPlugins': 'codesnippet,image2,autogrow,uploadimage', 
+        
+        # Eski image dialogini o'chirish (image2 bilan konfliktni hal qilish)
         'removeDialogs': 'image', 
-        'removePlugins': 'exportpdf,flash',
-        'image2_alignClasses': ['image-left', 'image-center', 'image-right'],
-        'image2_toolbar': ['|', 'imageTextAlternative', '|', 'imageWidth', 'imageHeight', 'imageStyle', '|', 'imageResize', 'imageResizeWidth', 'imageResizeHeight'],
-        'image2_config': {'maxWidth': 800}, 'resize_enabled': True,
-        'removeButtons': 'Flash,ExportPdf',
+        'removePlugins': 'exportpdf,flash',
         
-        # ✅ TUZATISH 3: Clipboard rasm yuklashni qo'llab-quvvatlash (ogohlantirishni kamaytirish)
+        # Image2 sozlamalari
+        'image2_alignClasses': ['image-left', 'image-center', 'image-right'],
+        'image2_toolbar': ['|', 'imageTextAlternative', '|', 'imageWidth', 'imageHeight', 'imageStyle', '|', 'imageResize', 'imageResizeWidth', 'imageResizeHeight'],
+        'image2_config': {'maxWidth': 800}, 
+        'resize_enabled': True,
+        
+        'removeButtons': 'Flash,ExportPdf',
+        
+        # Clipboard va yuklash sozlamalari
         'pasteFromWordRemoveFontStyles': True,
-        'forcePasteAsPlainText': False, # Rasmlarni matn sifatida yopishtirishni o'chirish
+        'forcePasteAsPlainText': False, 
         'pasteFromWordPromptCleanup': True,
-        'imageUploadUrl': '/ckeditor/upload/', # clipboard uchun ham yuklash URL'ini aniqlash
+        'imageUploadUrl': '/ckeditor/upload/',
         
-        'toolbar_Full': [
-            ['Styles', 'Format', 'Bold', 'Italic', 'Underline', 'Strike', 'SpellChecker', 'Undo', 'Redo'],
-            ['Link', 'Unlink', 'Anchor'], ['Image', 'Table', 'HorizontalRule'], # Image ikonasi image2 pluginiga bog'lanadi
-            ['TextColor', 'BGColor'], ['Smiley', 'SpecialChar'], ['Source', 'Maximize']
-        ],
-        'toolbar': 'Full', 'height': 300, 'width': '100%',
-    }
+        # To'liq Toolbar
+        'toolbar_Full': [
+            ['Styles', 'Format', 'Bold', 'Italic', 'Underline', 'Strike', 'SpellChecker', 'Undo', 'Redo'],
+            ['Link', 'Unlink', 'Anchor'], 
+            ['Image', 'Table', 'HorizontalRule'], 
+            ['TextColor', 'BGColor'], 
+            ['Smiley', 'SpecialChar'], 
+            ['Source', 'Maximize']
+        ],
+        'toolbar': 'Full', 
+        'height': 300, 
+        'width': '100%',
+    }
 }
 
 CKEDITOR_ALLOW_NON_STAFF_USERS = True
