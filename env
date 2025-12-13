@@ -1,0 +1,16 @@
+# BUNNY.NET STORAGE SOZLAMALARI
+# (Storage Zone yaratilgandan so'ng)
+BUNNY_STORAGE_ZONE_NAME='satmakonvideolari'
+
+# Bunny API Kalitlari:
+# Masalan, Bunny Storage Zone da 'Settings' > 'API Access' da olinadi
+BUNNY_ACCESS_KEY='761c7518-e520-416b-8f7af941bf23-d285-4374'
+
+# Endpoint URL (Regionga qarab):
+# Frankfurt (DE) mintaqasi uchun umumiy Yevropa Storage manzili ishlatiladi
+BUNNY_ENDPOINT_URL='https://storage.bunnycdn.com'
+BUNNY_REGION='se'
+
+# Bunny CDN (Pull Zone) host manzili:
+# cdn.SATvideos.com sizning domen nomingiz sifatida aniqlandi
+BUNNY_CDN_PULL_ZONE_HOST='cdn.SATvideos.com'

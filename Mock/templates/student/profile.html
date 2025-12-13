@@ -13,8 +13,9 @@
                 <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row items-center gap-6 transition">
                     
                     {% if user.profile_picture %}
-                        <img src="{{ user.profile_picture.url }}" alt="Profil rasmi"
-                            class="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover ring-4 ring-orange-300 shadow-lg border-4 border-white flex-shrink-0">
+                        <img src="https://satmakon-cdn.b-cdn.net/{{ user.profile_picture }}" 
+                             alt="Profil rasmi"
+                             class="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover ring-4 ring-orange-300 shadow-lg border-4 border-white flex-shrink-0">
                     {% else %}
                         <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-tr from-orange-500 to-amber-600 flex items-center justify-center text-white text-4xl font-extrabold ring-4 ring-orange-300 shadow-lg border-4 border-white flex-shrink-0">
                             {{ user.get_full_name|slice:":1"|upper|default:user.username|slice:":1"|upper }}
@@ -96,7 +97,8 @@
                                     {{ form.profile_picture }}
                                     {% if user.profile_picture %}
                                         <div class="mt-4 p-4 border rounded-xl bg-gray-50 flex items-center gap-4">
-                                            <img src="{{ user.profile_picture.url }}" class="w-20 h-20 rounded-lg object-cover shadow-md">
+                                            <img src="https://satmakon-cdn.b-cdn.net/{{ user.profile_picture }}" 
+                                                 class="w-20 h-20 rounded-lg object-cover shadow-md">
                                             <div>
                                                 <p class="text-sm font-medium text-slate-700">Joriy profil rasmi</p>
                                                 <p class="text-xs text-slate-500">Yangi rasm yuklash uchun yuqoriga fayl tanlang.</p>
