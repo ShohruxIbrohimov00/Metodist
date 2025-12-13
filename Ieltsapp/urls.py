@@ -23,7 +23,7 @@ from Mock.views import ckeditor_upload_image
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('ckeditor/upload/', ckeditor_upload_image, name='ckeditor_upload_image'),
+    path('ckeditor/', include('ckeditor_uploader.urls')),
     path('', include('Mock.urls')),
     path('select2/', include('django_select2.urls')),
 ]

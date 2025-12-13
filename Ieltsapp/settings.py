@@ -1,11 +1,10 @@
 """
 Django settings for Ieltsapp project.
 """
-
 from pathlib import Path
 import os
 import dj_database_url
-from decouple import config  # Atrof-muhit o'zgaruvchilarini (.env/Render Env) o'qish uchun
+from decouple import config
 
 # ----------------------------------------------------
 # ASOIY YO'LLAR
@@ -15,48 +14,38 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ----------------------------------------------------
 # XAVFSIZLIK VA DEBUG
 # ----------------------------------------------------
-# Maxfiy kalitni .env faylidan olish (Renderda env variables'dan olinadi)
 SECRET_KEY = config('SECRET_KEY')
-
-# Debug holatini .env faylidan olish. Serverda HAR DOIM False bo'lishi kerak.
 DEBUG = config('DEBUG', default=False, cast=bool)
-
-# Ruxsat etilgan domenlar ro'yxati
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost').split(',')
-
-ALLOWED_TELEGRAM_IDS = []
 
 # ----------------------------------------------------
 # ILOVALAR
 # ----------------------------------------------------
 INSTALLED_APPS = [
-    # 1. Asosiy Django ilovalari
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    'Mock.apps.MockAppConfig', 
-    
-    # 3. Boshqa uchinchi tomon ilovalari
+
+    'Mock.apps.MockAppConfig',
+
     'widget_tweaks',
     'django_select2',
     'ckeditor',
     'ckeditor_uploader',
-    'django.contrib.humanize', 
+    'django.contrib.humanize',
     'django_bleach',
     'crispy_forms',
+    'django_bunny_storage',
 ]
 
 # ----------------------------------------------------
 # MIDDLEWARE
 # ----------------------------------------------------
 MIDDLEWARE = [
-    # Whitenoise eng tepada bo'lishi shart
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -70,10 +59,9 @@ ROOT_URLCONF = 'Ieltsapp.urls'
 WSGI_APPLICATION = 'Ieltsapp.wsgi.application'
 
 # ----------------------------------------------------
-# DATABASE (PostgreSQL Sozlamalari)
+# DATABASE
 # ----------------------------------------------------
 if DEBUG:
-    # Lokal rivojlanish uchun (SQLite)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -81,19 +69,18 @@ if DEBUG:
         }
     }
 else:
-    # Server (Render) uchun: DATABASE_URL (PostgreSQL) orqali sozlanadi
     DATABASES = {
         'default': dj_database_url.config(
             default=config('DATABASE_URL'),
-            conn_max_age=600  # Ulanish vaqtini cheklash
+            conn_max_age=600,
+            ssl_require=True
         )
     }
 
 # ----------------------------------------------------
-# KESH (DUMMY/LOCMEM CACHING - RESURSLARNI TEJASH UCHUN)
+# KESH
 # ----------------------------------------------------
 if DEBUG:
-    # Lokal rivojlanish uchun LocMemCache (eng sodda va tez)
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -101,65 +88,80 @@ if DEBUG:
         }
     }
 else:
-    # ⭐️ Server (Production) uchun DUMMY kesh. Bu kesh chaqiriqlarini e'tiborsiz qoldiradi.
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
         }
     }
 
-# CELERY BROKER URL SIZNING SO'ROVINGIZGA KO'RA BUTUNLAY O'CHIRILDI.
 # ----------------------------------------------------
-
-# ----------------------------------------------------
-# XAVFSIZLIKNI KUCHAYTIRISH (DEBUG=False bo'lganda)
+# XAVFSIZLIK (Production)
 # ----------------------------------------------------
 if not DEBUG:
-    # Render HTTPS ishlatganligi uchun
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = True
-    
-    # HTTP Strict Transport Security (HSTS)
-    SECURE_HSTS_SECONDS = 31536000 # 1 yil
+    SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-    
-    # Boshqa xavfsizlik sozlamalari
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
 
-# ----------------------------------------------------
-# CSRF VA DOMENLAR
-# ----------------------------------------------------
-# ALLOWED_HOSTS asosida avtomatik HTTPS manbalarni qo'shadi
-CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host not in ['127.0.0.1', 'localhost']]
-CSRF_TRUSTED_ORIGINS += ['http://127.0.0.1:8000', 'http://localhost:8000', 'https://localhost:8000'] 
-
+    CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host not in ['127.0.0.1', 'localhost']]
+    CSRF_TRUSTED_ORIGINS += ['http://127.0.0.1:8000', 'http://localhost:8000', 'https://localhost:8000']
+else:
+    CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000', 'https://localhost:8000']
 
 # ----------------------------------------------------
-# STATIC VA MEDIA FILES (Render/Whitenoise)
+# STATIC FILES — HAR DOIM BOʻLSIN! (ENG MUHIM!)
 # ----------------------------------------------------
-STATIC_URL = '/static/'
+STATIC_URL = '/static/'                                          # ← BU QATOR HAR DOIM BOʻLSIN!
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') 
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Whitenoise statik fayllarni serverda ishlatish uchun
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # ----------------------------------------------------
-# BOSHQA SOZLAMALAR
+# MEDIA FILES — BUNNY.NET (Production)
 # ----------------------------------------------------
+if not DEBUG:
+    # To'g'ri backend nomi
+    DEFAULT_FILE_STORAGE = 'django_bunny_storage.storage.BunnyStorage'
 
+    # Bu paket faqat quyidagi nomlarni o'qiydi:
+    BUNNY_USERNAME = config('BUNNY_STORAGE_ZONE_NAME')     # satmakonvideolari
+    BUNNY_PASSWORD = config('BUNNY_STORAGE_PASSWORD')      # FTP & API Access → Password !!!
+    BUNNY_REGION   = config('BUNNY_REGION', default='de')  # de, ny, la...
+
+    # MUHIM: MEDIA_URL CDN Pull Zone bo'lishi kerak, storage zone emas!
+    BUNNY_CDN_HOSTNAME = config('BUNNY_CDN_PULL_ZONE_HOST')  # masalan: satmakon.b-cdn.net
+    MEDIA_URL = f'https://{BUNNY_CDN_HOSTNAME}/'
+    
+    # Fayllar qaysi papkaga tushadi (agar kerak bo'lsa)
+    # BUNNY_BASE_DIR = "uploads/"  # Bu qatorni olib tashlang yoki bo'sh qoldiring
+    
+    CKEDITOR_UPLOAD_PATH = "uploads/"
+
+else:
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    CKEDITOR_UPLOAD_PATH = "uploads/"
+    
+# ----------------------------------------------------
+# LOGGING (xatoliklarni koʻrish uchun)
+# ----------------------------------------------------
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'handlers': {'console': {'class': 'logging.StreamHandler',}},
-    # DEBUG holatiga qarab log levelini sozlash
-    'loggers': {'': {'handlers': ['console'], 'level': 'INFO' if not DEBUG else 'DEBUG',}},
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler'},
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
 }
 
 TEMPLATES = [
@@ -190,9 +192,8 @@ TIME_ZONE = 'Asia/Tashkent'
 USE_I18N = True
 USE_TZ = True
 
-# CKEditor Sozlamalari (o'zgarishsiz qoldirildi)
-CKEDITOR_UPLOAD_PATH = "uploads/"
-CKEDITOR_IMAGE_BACKEND = "pillow"
+# CKEditor Sozlamalari 
+CKEDITOR_IMAGE_BACKEND = "pillow" # BU YERDA CKEDITOR_UPLOAD_PATH BO'LMASLIGI KERAK!
 
 CKEDITOR_CONFIGS = {
     'default': {
@@ -226,3 +227,4 @@ LOGIN_REDIRECT_URL = '/redirect/'
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 CRISPY_TEMPLATE_PACK = "uni_form"
+CKEDITOR_BASEPATH = f"{STATIC_URL}ckeditor/ckeditor/"
